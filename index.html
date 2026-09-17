@@ -1,0 +1,2298 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Transformers, Interactively Explained</title><style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
+:root{
+  --bg:#F4F0E6; --surface:#FBF8F1; --card:#ECE6D6; --border:#DCD3B8;
+  --ink:#2A2620; --ink-dim:#6B6250; --ink-faint:#948A73;
+  --shadow: 0 1px 2px rgba(42,38,32,.06), 0 4px 14px rgba(42,38,32,.05);
+}
+
+*{box-sizing:border-box;}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:'IBM Plex Sans',system-ui,sans-serif;}
+code,.mono,input,textarea{font-family:'IBM Plex Mono',monospace;}
+a{color:inherit;}
+h1,h2,h3,h4{font-family:'IBM Plex Sans',sans-serif;font-weight:600;margin:0 0 .5em;}
+p{line-height:1.65;color:var(--ink);margin:0 0 1em;}
+button{font-family:inherit;cursor:pointer;}
+.view{display:none;}
+.view.active{display:block;}
+
+/* ---------- Landing ---------- */
+#landing{max-width:920px;margin:0 auto;padding:56px 20px 80px;}
+.eyebrow{color:var(--ink-faint);font-size:14px;margin-bottom:6px;}
+#landing h1{font-size:clamp(28px,4vw,40px);letter-spacing:-.01em;color:var(--ink);}
+.lede{color:var(--ink-dim);font-size:17px;max-width:640px;margin-bottom:36px;}
+.card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px;}
+.topic-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;text-align:left;transition:transform .15s ease, box-shadow .15s ease;}
+.topic-card:hover{transform:translateY(-2px);box-shadow:var(--shadow);}
+.card-icon{width:42px;height:42px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;margin-bottom:14px;}
+.topic-card h3{font-size:17px;margin-bottom:6px;color:var(--ink);}
+.topic-card p{font-size:14px;color:var(--ink-dim);margin-bottom:14px;min-height:40px;}
+.open-link{font-size:13.5px;font-weight:600;}
+
+/* ---------- Topic page ---------- */
+.topic-page{min-height:100vh;}
+.topbar{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:14px;padding:14px 24px;background:var(--surface);border-bottom:1px solid var(--border);}
+.back-btn{background:none;border:1px solid var(--border);border-radius:8px;padding:7px 12px;font-size:13.5px;color:var(--ink-dim);}
+.back-btn:hover{color:var(--ink);}
+.badge{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#fff;flex-shrink:0;}
+.topbar-title{font-size:15.5px;font-weight:600;}
+.topic-body{display:flex;max-width:1180px;margin:0 auto;}
+.sidebar{width:220px;flex-shrink:0;padding:26px 16px;position:sticky;top:59px;align-self:flex-start;height:calc(100vh - 59px);overflow-y:auto;}
+.sb-group{margin-bottom:20px;}
+.sb-label{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-faint);margin-bottom:8px;padding-left:10px;}
+.sb-link{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;font-size:13.5px;color:var(--ink-dim);text-decoration:none;margin-bottom:2px;}
+.sb-link:hover{background:var(--card);color:var(--ink);}
+.sb-link.active{background:var(--card);color:var(--ink);font-weight:600;}
+.content{flex:1;min-width:0;padding:32px 24px 100px;}
+.content h1.page-title{font-size:26px;margin-bottom:6px;color:var(--ink);}
+.page-sub{color:var(--ink-dim);font-size:15px;margin-bottom:24px;}
+
+
+section.sec{margin-bottom:48px;scroll-margin-top:80px;}
+section.sec h2{font-size:20px;display:flex;align-items:center;gap:8px;}
+.section-icon{font-size:18px;}
+
+.callout{border:1px solid var(--ac-border);background:var(--ac-soft);border-radius:12px;padding:16px 18px;margin:16px 0;font-size:14.5px;}
+.callout.extra{border-style:dashed;}
+.callout-label{font-size:11px;text-transform:uppercase;letter-spacing:.05em;font-weight:600;color:var(--ac);margin-bottom:6px;}
+
+table{width:100%;border-collapse:collapse;font-size:13.5px;margin:14px 0;}
+th,td{border:1px solid var(--border);padding:9px 12px;text-align:left;}
+th{background:var(--card);font-weight:600;}
+td{color:var(--ink-dim);}
+
+.panel{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px;margin:16px 0;}
+.btn{background:var(--ac);color:#fff;border:none;border-radius:8px;padding:9px 16px;font-size:13.5px;font-weight:600;}
+.btn:hover{opacity:.9;}
+.btn.ghost{background:none;border:1px solid var(--border);color:var(--ink);}
+input[type=text],textarea{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:9px 11px;font-size:13.5px;color:var(--ink);}
+label.field-label{font-size:12.5px;color:var(--ink-dim);margin-bottom:5px;display:block;}
+.row{display:flex;gap:12px;flex-wrap:wrap;}
+.row > div{flex:1;min-width:180px;}
+
+.chip{display:inline-flex;align-items:center;padding:5px 10px;border-radius:7px;background:var(--card);border:1px solid var(--border);font-size:13px;margin:3px;}
+.chip.masked{background:var(--ac-soft);border-color:var(--ac-border);color:var(--ac);font-weight:600;}
+.chip.clickable{cursor:pointer;}
+.chip.clickable:hover{border-color:var(--ac);}
+
+.bar-row{display:flex;align-items:center;gap:10px;margin:6px 0;font-size:13px;}
+.bar-label{width:70px;flex-shrink:0;color:var(--ink-dim);}
+.bar-track{flex:1;height:14px;background:var(--card);border-radius:7px;overflow:hidden;}
+.bar-fill{height:100%;background:var(--ac);}
+.bar-val{width:48px;text-align:right;flex-shrink:0;font-size:12px;color:var(--ink-faint);}
+
+.quiz-q{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px 20px;margin-bottom:14px;}
+.quiz-q p.qtext{font-weight:600;margin-bottom:10px;}
+.quiz-opt{display:block;width:100%;text-align:left;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:9px 12px;margin-bottom:7px;font-size:13.5px;color:var(--ink);}
+.quiz-opt:hover{border-color:var(--ac);}
+.quiz-opt.correct{background:rgba(59,122,69,.15);border-color:#3B7A45;color:var(--ink);}
+.quiz-opt.wrong{background:rgba(178,58,46,.15);border-color:#B23A2E;color:var(--ink);}
+.quiz-exp{font-size:13px;color:var(--ink-dim);margin-top:8px;display:none;}
+.quiz-exp.show{display:block;}
+.quiz-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
+
+svg text{font-family:'IBM Plex Sans',sans-serif;}
+.diagram-wrap{overflow-x:auto;padding:8px 0;}
+
+.timeline{display:flex;flex-direction:column;gap:8px;}
+.tl-item{display:flex;gap:14px;align-items:flex-start;cursor:pointer;padding:10px 12px;border-radius:10px;border:1px solid transparent;}
+.tl-item:hover{background:var(--card);}
+.tl-item.open{background:var(--ac-soft);border-color:var(--ac-border);}
+.tl-dot{width:26px;height:26px;border-radius:50%;background:var(--ac);color:#fff;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;}
+.tl-body{flex:1;}
+.tl-title{font-weight:600;font-size:14.5px;}
+.tl-meta{font-size:12px;color:var(--ink-faint);margin-bottom:4px;}
+.tl-detail{font-size:13.5px;color:var(--ink-dim);display:none;margin-top:6px;}
+.tl-item.open .tl-detail{display:block;}
+
+.proc-track{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0;}
+.proc-chip{padding:8px 12px;border-radius:8px;background:var(--card);border:1px solid var(--border);font-size:13px;opacity:.35;transition:opacity .2s, background .2s;}
+.proc-chip.lit{opacity:1;background:var(--ac-soft);border-color:var(--ac-border);color:var(--ac);font-weight:600;}
+.proc-log{font-size:12.5px;color:var(--ink-faint);margin-top:6px;min-height:18px;}
+
+.arch-steps{display:flex;flex-direction:column;gap:5px;}
+.arch-step{display:flex;gap:10px;padding:7px 10px;border-radius:8px;border:1px solid transparent;font-size:13px;cursor:pointer;}
+.arch-step:hover{background:var(--card);}
+.arch-step.active{background:var(--ac-soft);border-color:var(--ac-border);}
+.arch-step .n{width:20px;height:20px;border-radius:5px;background:var(--border);color:var(--ink-dim);font-size:11px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.arch-step.active .n{background:var(--ac);color:#fff;}
+.arch-group-label{font-size:11px;text-transform:uppercase;letter-spacing:.04em;font-weight:600;color:var(--ac);background:var(--ac-soft);border:1px solid var(--ac-border);border-radius:6px;padding:4px 10px;margin:10px 0 4px;}
+.arch-group-label:first-child{margin-top:0;}
+.arch-detail{font-size:13.5px;color:var(--ink-dim);background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-top:10px;min-height:44px;}
+
+footer.pf{max-width:1180px;margin:0 auto;padding:28px 24px 60px;border-top:1px solid var(--border);font-size:13px;color:var(--ink-faint);display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+footer.pf .pf-avatar{width:38px;height:38px;border-radius:50%;background:var(--ac,#0E7C86);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;flex:0 0 38px;font-family:'IBM Plex Sans',sans-serif;}
+footer.pf .pf-name{font-size:14px;font-weight:600;color:var(--ink);}
+footer.pf .pf-links{display:flex;gap:14px;margin-top:2px;}
+footer.pf .pf-links a{font-size:12.5px;color:var(--ink-dim);text-decoration:none;}
+footer.pf .pf-links a:hover{color:var(--ac,#0E7C86);text-decoration:underline;}
+
+.matrix-wrap{overflow-x:auto;}
+.matrix-grid{border-collapse:collapse;font-size:12px;margin:10px 0;}
+.matrix-grid th,.matrix-grid td{border:1px solid var(--border);padding:6px 9px;text-align:center;font-family:'IBM Plex Mono',monospace;min-width:44px;}
+.matrix-grid th{background:var(--card);font-weight:600;color:var(--ink-dim);}
+.matrix-grid td.masked-cell{color:var(--ink-faint);background:repeating-linear-gradient(45deg,var(--card),var(--card) 4px,var(--bg) 4px,var(--bg) 8px);}
+
+.stepper{display:flex;align-items:center;gap:10px;margin:14px 0;flex-wrap:wrap;}
+.stepper .step-label{font-size:13px;color:var(--ink-dim);}
+.step-dots{display:flex;gap:5px;}
+.step-dot{width:8px;height:8px;border-radius:50%;background:var(--border);}
+.step-dot.done{background:var(--ac);}
+.step-dot.current{background:var(--ac);box-shadow:0 0 0 3px var(--ac-soft);}
+
+.trace-panel{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px;margin:16px 0;min-height:140px;}
+.trace-panel h4{margin:0 0 8px;font-size:14px;color:var(--ac);}
+.vec-box{display:inline-flex;flex-direction:column;align-items:center;margin:4px 6px 4px 0;vertical-align:top;}
+.vec-box .vec-tag{font-size:11px;color:var(--ink-faint);margin-bottom:3px;}
+.vec-box .vec-vals{font-family:'IBM Plex Mono',monospace;font-size:11.5px;background:var(--card);border:1px solid var(--border);border-radius:6px;padding:6px 8px;white-space:nowrap;}
+
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+@media (max-width:700px){.two-col{grid-template-columns:1fr;}}
+
+@media (max-width:860px){
+  .sidebar{display:none;}
+  .topic-body{display:block;}
+  .content{padding:24px 16px 80px;}
+}
+
+/* ---------- Revision / cheat-sheet panel ---------- */
+.revision-panel{border-left:4px solid var(--ac);background:var(--ac-soft);border-radius:10px;padding:16px 20px;margin:16px 0;}
+.revision-panel .rp-label{margin:0 0 8px;font-size:11px;text-transform:uppercase;letter-spacing:.05em;font-weight:700;color:var(--ac);}
+.revision-panel ul{margin:0;padding-left:20px;line-height:1.85;font-size:14px;}
+.revision-panel li{margin-bottom:2px;}
+
+/* ---------- Flow tags (WHY/WHAT/HOW/FORMULA/TRY IT) ---------- */
+.flow-tag{display:inline-block;font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint);background:var(--card);border:1px solid var(--border);border-radius:20px;padding:2px 10px;margin-bottom:8px;}
+
+/* ---------- Real / toy badges ---------- */
+.real-badge,.toy-badge{display:inline-block;font-size:10px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;border-radius:20px;padding:2px 9px;margin-left:8px;vertical-align:middle;}
+.real-badge{background:var(--ac-soft);color:var(--ac);border:1px solid var(--ac-border);}
+.toy-badge{background:none;color:var(--ink-faint);border:1px dashed var(--border);}
+
+/* ---------- Plain-English callouts under formulas ---------- */
+.plain-english{font-style:italic;color:var(--ink-dim);font-size:13.5px;margin:8px 0 4px;}
+
+/* ---------- Deep Dive collapsible sections ---------- */
+.dd-toggle{cursor:pointer;font-size:13px;font-weight:600;color:var(--ac);background:var(--ac-soft);border:1px dashed var(--ac-border);border-radius:8px;padding:9px 14px;margin:6px 0 4px;display:flex;align-items:center;justify-content:space-between;gap:10px;}
+.dd-body{margin-top:12px;}
+.dd-body.dd-collapsed{display:none;}
+
+/* ---------- Progress indicator ---------- */
+.progress-wrap{display:flex;align-items:center;gap:10px;margin:14px 0 26px;}
+.progress-dots{display:flex;gap:5px;}
+.progress-dot{width:9px;height:9px;border-radius:50%;background:var(--border);}
+.progress-dot.visited{background:#5B4FA8;}
+.progress-text{font-size:12.5px;color:var(--ink-dim);}
+.topbar-progress{font-size:12.5px;color:var(--ink-dim);margin-left:auto;padding-right:4px;white-space:nowrap;}
+.topic-card{position:relative;}
+.card-visited-badge{position:absolute;top:14px;right:14px;font-size:14px;}
+.read-time{font-size:11.5px;color:var(--ink-faint);margin-left:6px;}
+
+/* ---------- Mobile nav ---------- */
+.mobile-nav{display:none;margin-bottom:18px;}
+.mobile-nav select{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:9px 11px;font-size:13.5px;color:var(--ink);}
+@media (max-width:860px){.mobile-nav{display:block;}}
+
+/* ---------- Glossary modal ---------- */
+#glossary-modal{display:none;position:fixed;inset:0;z-index:200;}
+#glossary-modal.open{display:block;}
+.glossary-overlay{position:absolute;inset:0;background:rgba(42,38,32,.45);}
+.glossary-panel{position:relative;max-width:560px;margin:60px auto;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:26px 26px 20px;max-height:80vh;overflow-y:auto;box-shadow:var(--shadow);}
+.glossary-panel h2{margin-bottom:14px;}
+.glossary-item{margin-bottom:12px;}
+.glossary-item .term{font-weight:600;font-family:'IBM Plex Mono',monospace;color:var(--ink);}
+.glossary-item .def{color:var(--ink-dim);font-size:13.5px;}
+.glossary-close{position:absolute;top:16px;right:18px;background:none;border:1px solid var(--border);border-radius:8px;padding:5px 10px;font-size:13px;}
+
+/* ---------- Topic bottom nav ---------- */
+.topicnav{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:40px 0 6px;flex-wrap:wrap;}
+
+/* ---------- Mastery checkpoint ---------- */
+.mastery-badge{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600;padding:6px 12px;border-radius:20px;border:1px solid var(--border);color:var(--ink-faint);background:var(--card);}
+.mastery-badge.earned{color:#3B7A45;background:rgba(59,122,69,.12);border-color:#3B7A45;}
+
+/* ---------- Show/hide numbers toggle ---------- */
+.nums-wrap .nums-fallback{display:none;font-size:13px;color:var(--ink-dim);font-style:italic;margin-top:10px;}
+.nums-wrap.hide-nums .nums-content{display:none;}
+.nums-wrap.hide-nums .nums-fallback{display:block;}
+.numtoggle-btn{margin-bottom:10px;}
+</style></head><body>
+
+
+<!-- ================= LANDING ================= -->
+<div id="landing" class="view active">
+  <h1>Transformers, Interactively Explained</h1>
+  <p class="lede">A 6-part walkthrough of the Transformer architecture — self-attention, the encoder–decoder stack, multi-head/cross/masked attention, a full end-to-end pipeline trace, and BERT vs. GPT — with live calculators and quizzes on every topic.</p>
+  <div class="progress-wrap" id="progress-landing"></div>
+  <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:30px;">
+    <button class="btn" style="color:var(--ink);" onclick="openTopic('topic1')">🚀 Start Learning</button>
+    <button class="btn ghost" onclick="openGlossary()">📖 Glossary</button>
+  </div>
+  <div class="card-grid" id="landing-grid"></div>
+  <div id="footer-landing"></div>
+</div>
+
+<!-- ================= GLOSSARY MODAL ================= -->
+<div id="glossary-modal">
+  <div class="glossary-overlay" onclick="closeGlossary()"></div>
+  <div class="glossary-panel">
+    <button class="glossary-close" onclick="closeGlossary()">✕ Close</button>
+    <h2>📖 Glossary</h2>
+    <div id="glossary-body"></div>
+  </div>
+</div>
+
+<!-- ================= TOPIC 1 ================= -->
+<div class="view topic-page" id="topic1" data-accent="indigo">
+  <div class="topbar">
+    <button class="back-btn" onclick="openTopic('landing')">← All topics</button>
+    <div class="badge" style="background:var(--ac)">1</div>
+    <div class="topbar-title">Foundations — From Neural Nets to Transformers</div>
+    <span class="topbar-progress" id="topbar-progress-topic1"></span>
+    <button class="btn ghost topbar-glossary-btn" onclick="openGlossary()">📖 Glossary</button>
+  </div>
+  <div class="topic-body">
+    <nav class="sidebar" id="sidebar-topic1"></nav>
+    <div class="content">
+      <h1 class="page-title">Foundations — From Neural Nets to Transformers</h1>
+      <div class="mobile-nav" id="mobilenav-topic1"></div>
+      <p class="page-sub">Why the Transformer showed up, and what it replaced.</p>
+      <section class="sec" id="t1-revision">
+        <div class="revision-panel">
+          <div class="rp-label">⚡ 5-Minute Revision</div>
+          <ul>
+          <li>Transformers (2017, <em>"Attention Is All You Need"</em>) drop recurrence entirely and replace it with self-attention — every word attends to every other word in parallel — plus a feed-forward layer, residual connections, and normalization in every block.</li>
+          <li>RNN/LSTM read text sequentially → slow, and prone to losing long-range context (vanishing gradients).</li>
+          <li>Word2Vec embeddings are <strong>static</strong> — one fixed vector per word, forever.</li>
+          <li>Encoder–decoder + attention (2016) let the decoder "look back" at specific encoder states — the preview idea that became self-attention.</li>
+          <li>Two-stack shape: an <strong>encoder</strong> reads the input, a <strong>decoder</strong> generates the output, connected by cross-attention.</li>
+          <li>ULMFiT (2017–18) introduced the pretrain-then-fine-tune recipe that modern LLMs still follow.</li>
+          </ul>
+        </div>
+      </section>
+
+
+      <section class="sec" id="t1-concept">
+        <span class="flow-tag">WHY</span>
+        <h2><span class="section-icon">💡</span> The big picture</h2>
+        <p>Every architecture in this story exists to do one thing: turn language into <strong>meaningful numbers</strong>, and get better at using context to do it. Plain neural networks could learn patterns but had no sense of order. Word2Vec (a neural network's intermediate output) gave every word a fixed vector — a real leap, but the vector for a word never changed, no matter what sentence it appeared in. Recurrent networks (RNN → LSTM/GRU, 2014–15) finally handled <em>sequences</em> — text read in order — by carrying a hidden state from one word to the next. That unlocked encoder–decoder models for machine translation, then encoder–decoder <em>with attention</em>, which let the decoder "look back" at specific input words instead of relying on one squeezed-down summary.</p>
+        <p>The catch: RNNs process one token at a time, in order — slow, and prone to losing track of anything said too long ago (the "long‑term dependency" / vanishing‑gradient problem). The 2017 paper <em>"Attention Is All You Need"</em> removed recurrence entirely and replaced it with self‑attention — every word looks at every other word <strong>at once</strong> — combined with a feed-forward network, residual connections, and normalization in every block. That's the Transformer.</p>
+      </section>
+
+      <section class="sec" id="t1-map">
+        <span class="flow-tag">WHAT</span>
+        <h2><span class="section-icon">🗺️</span> The full architecture, at a glance</h2>
+        <p>Before going deeper, here's the whole shape you're building toward: two stacks — an <strong>encoder</strong> that reads the input sentence, and a <strong>decoder</strong> that generates the output — connected by cross-attention. Every topic after this one fills in one piece of this picture.</p>
+        <div class="diagram-wrap" id="t1-diagram"></div>
+        <div class="callout">
+          <div class="callout-label">Where each piece is covered</div>
+          Self-Attention (Topic 2) → Encoder &amp; Decoder blocks, Add &amp; Norm, Feed-Forward (Topic 3) → Multi-Head, Cross- and Masked Attention (Topic 4) → the whole pipeline traced end to end on a real example (Topic 5). Come back to this diagram any time you want to re-orient.
+        </div>
+      </section>
+
+      <section class="sec" id="t1-timeline">
+        <span class="flow-tag">HOW</span>
+        <h2><span class="section-icon">🕰️</span> The road to Transformers</h2>
+        <p>Click each stage to expand what changed and why it wasn't the final answer.</p>
+        <div class="timeline" id="t1-timeline-list"></div>
+      </section>
+
+      <section class="sec" id="t1-handson">
+        <span class="flow-tag">TRY IT</span>
+        <h2><span class="section-icon">🧪</span> Try it yourself — sequential vs. parallel <span class="toy-badge">TOY / ILLUSTRATIVE</span></h2>
+        <p>The single biggest practical difference between RNN/LSTM and Transformers: how they move through a sentence. Run the simulation below on the same 6‑word sentence and watch the difference in how (not how well) each one works.</p>
+        <div class="panel">
+          <div class="row">
+            <div>
+              <label class="field-label">RNN / LSTM — one word at a time</label>
+              <div class="proc-track" id="rnn-track"></div>
+              <div class="proc-log" id="rnn-log">Press "Run" to start.</div>
+            </div>
+            <div>
+              <label class="field-label">Transformer — all words at once</label>
+              <div class="proc-track" id="tf-track"></div>
+              <div class="proc-log" id="tf-log">Press "Run" to start.</div>
+            </div>
+          </div>
+          <button class="btn" onclick="runSeqDemo()" style="margin-top:10px;">▶ Run comparison</button>
+          <p style="font-size:12px;color:var(--ink-faint);margin:10px 0 0;">This is a timing <em>illustration</em>, not a benchmark of any real model — it's here to make the "sequential vs. parallel" idea visible rather than abstract.</p>
+          <div class="callout">
+            <div class="callout-label">💡 What should I notice?</div>
+            Notice the Transformer track lights up all at once, no matter the sentence length, while the RNN track lights up one word later each step — that gap only gets wider on longer sentences.
+          </div>
+        </div>
+      </section>
+
+      <section class="sec" id="t1-reference">
+        <h2><span class="section-icon">📋</span> RNN/LSTM vs. Transformer</h2>
+        <table>
+          <tr><th>Feature</th><th>RNN / LSTM</th><th>Transformer</th></tr>
+          <tr><td>Processing style</td><td>Sequential (step by step)</td><td>Parallel (all tokens at once)</td></tr>
+          <tr><td>Training speed</td><td>Slower (can't parallelize across positions)</td><td>Faster to train (parallelizable), at the cost of more compute/memory per step</td></tr>
+          <tr><td>Long-range dependency</td><td>Weak — prone to vanishing gradients over long sequences</td><td>Much stronger, but not unlimited — still bounded by context window length and quadratic attention cost</td></tr>
+          <tr><td>Architecture</td><td>Gates: input, forget, output</td><td>Attention-based (self-attention)</td></tr>
+        </table>
+        <p style="font-size:12px;color:var(--ink-faint);margin:8px 0 0;">Transformers don't "solve" long-range dependency outright — they sidestep the specific vanishing-gradient mechanism by letting every token attend directly to every other token, but very long sequences still cost more compute and can dilute attention.</p>
+      </section>
+
+      <section class="sec" id="t1-reading">
+        <h2><span class="section-icon">📚</span> Further reading</h2>
+        <p>The primary sources behind this timeline, if you want to go straight to them:</p>
+        <div class="panel">
+          <ul style="margin:0;padding-left:20px;line-height:2;">
+            <li><a href="https://arxiv.org/pdf/1409.3215" target="_blank" rel="noopener">Sequence to Sequence Learning with Neural Networks</a> — the original encoder–decoder paper (2014)</li>
+            <li><a href="https://arxiv.org/pdf/1409.0473" target="_blank" rel="noopener">Neural Machine Translation by Jointly Learning to Align and Translate</a> — encoder–decoder with attention (2014/2016)</li>
+            <li><a href="https://arxiv.org/pdf/1801.06146" target="_blank" rel="noopener">Universal Language Model Fine-tuning for Text Classification (ULMFiT)</a> (2018)</li>
+            <li><a href="https://arxiv.org/pdf/1706.03762" target="_blank" rel="noopener">Attention Is All You Need</a> — the Transformer paper (2017)</li>
+            <li><a href="https://jalammar.github.io/illustrated-transformer/" target="_blank" rel="noopener">The Illustrated Transformer</a> — Jay Alammar's visual walkthrough (blog)</li>
+          </ul>
+        </div>
+      </section>
+
+      <section class="sec" id="t1-quiz">
+        <div class="quiz-head"><h2 style="margin:0;"><span class="section-icon">📝</span> Quick check</h2><button class="btn ghost" onclick="renderQuiz('t1')">Reset quiz</button></div>
+        <div id="t1-quiz-body"></div>
+      </section>
+
+      <section class="sec" id="t1-mastery">
+        <h2><span class="section-icon">🏆</span> Master this topic</h2>
+        <div id="mastery-t1"></div>
+      </section>
+
+      <div id="topicnav-topic1"></div>
+
+      <div id="footer-topic1"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ================= TOPIC 2 ================= -->
+<div class="view topic-page" id="topic2" data-accent="coral">
+  <div class="topbar">
+    <button class="back-btn" onclick="openTopic('landing')">← All topics</button>
+    <div class="badge" style="background:var(--ac)">2</div>
+    <div class="topbar-title">Self-Attention — Words Understanding Each Other</div>
+    <span class="topbar-progress" id="topbar-progress-topic2"></span>
+    <button class="btn ghost topbar-glossary-btn" onclick="openGlossary()">📖 Glossary</button>
+  </div>
+  <div class="topic-body">
+    <nav class="sidebar" id="sidebar-topic2"></nav>
+    <div class="content">
+      <h1 class="page-title">Self-Attention — Words Understanding Each Other</h1>
+      <div class="mobile-nav" id="mobilenav-topic2"></div>
+      <p class="page-sub">"Self-attention = a word looking at other words in the same sentence to understand its meaning."</p>
+      <section class="sec" id="t2-revision">
+        <div class="revision-panel">
+          <div class="rp-label">⚡ 5-Minute Revision</div>
+          <ul>
+          <li>Formula: <span class="mono">Attention(Q,K,V) = softmax(QKᵀ/√d<sub>k</sub>)·V</span>.</li>
+          <li><strong>Q</strong> = what a word is looking for, <strong>K</strong> = what a word offers for matching, <strong>V</strong> = what actually gets passed along once matched.</li>
+          <li>QKᵀ = similarity score between words; dividing by √d<sub>k</sub> keeps scores stable; softmax turns scores into weights summing to 1.</li>
+          <li>Every word's output is a weighted blend of every word in its sentence → a <strong>contextual representation</strong> (not "dynamic embedding").</li>
+          <li>Same word, different sentence → different weights → different output vector (classic example: "bank" in a money sentence vs. a river sentence).</li>
+          <li>Self-attention: Q/K/V from the same sequence. Cross-attention: Q from decoder, K/V from encoder. Masked self-attention: Q blocked from future K/V.</li>
+          </ul>
+        </div>
+      </section>
+
+
+      <section class="sec" id="t2-concept">
+        <span class="flow-tag">WHY</span>
+        <h2><span class="section-icon">💡</span> Concept</h2>
+        <p>A Word2Vec-style embedding is <strong>static</strong>: the word "bank" gets exactly one vector, forever. But "bank" means something different in <em>"money bank grows"</em> than in <em>"river bank flows"</em>. Self-attention fixes this by making every word's final representation a <strong>weighted blend of every word in its own sentence</strong> — so the same starting word can end up at a different point in vector space depending on its neighbors. That's called a <strong>contextual representation</strong> (some material loosely calls this a "dynamic embedding," but contextual representation/contextual embedding is the standard term worth using in an interview).</p>
+      </section>
+
+      <section class="sec" id="t2-example">
+        <span class="flow-tag">WHAT</span>
+        <h2><span class="section-icon">📖</span> Worked example (from the notes)</h2>
+        <p>Take the word <strong>money</strong> in "money bank grows". Self-attention represents it as a weighted sum of every word's vector in the sentence:</p>
+        <div class="panel mono" style="font-size:14px;">money → w₁·money + w₂·bank + w₃·grows</div>
+        <p style="margin-top:10px;">Now compare two sentences that both contain "bank":</p>
+        <div class="row">
+          <div class="panel"><strong>S₁:</strong> money <u>bank</u> grows<br><span style="color:var(--ink-dim);font-size:13px;">"bank" leans toward money/finance — pulled toward <em>money</em> and <em>grows</em>.</span></div>
+          <div class="panel"><strong>S₂:</strong> river <u>bank</u> flows<br><span style="color:var(--ink-dim);font-size:13px;">"bank" leans toward geography — pulled toward <em>river</em> and <em>flows</em>.</span></div>
+        </div>
+        <p style="margin-top:10px;">Same word, same starting vector — but two different weighted combinations, so two different output vectors. The same logic explains the notes' other example: "I ate the <strong>apple</strong> while my <strong>Apple</strong> phone charged" — self-attention pulls one "apple" toward <em>fruit</em> and the other toward <em>company</em>, using surrounding words as evidence.</p>
+        <div class="callout">
+          <div class="callout-label">Straight from the notes</div>
+          This weighted-sum treatment isn't just for "bank" — <strong>every</strong> word in the sentence gets rewritten this way. For S₁ = "money bank grow": <span class="mono">money → w₁·money + w₂·bank + w₃·grow</span>, <span class="mono">bank → w₁·money + w₂·bank + w₃·grow</span>, and <span class="mono">grow → w₁·money + w₂·bank + w₃·grow</span> — same three ingredients each time, but the weights (w₁, w₂, w₃) are different for each target word, because each word "looks at" the sentence from its own position.
+        </div>
+      </section>
+
+      <section class="sec" id="t2-formula">
+        <span class="flow-tag">FORMULA</span>
+        <h2><span class="section-icon">🧮</span> Where the weights come from</h2>
+        <p>Those weights aren't guessed — they come from one formula, applied to every word at once:</p>
+        <div class="panel mono" style="font-size:16px;text-align:center;padding:22px;">
+          Attention(Q, K, V) = softmax( QKᵀ ⁄ √d<sub>k</sub> ) · V
+        </div>
+        <p class="plain-english"><em>In plain English:</em> look at how similar every word's Query is to every word's Key, turn those similarity scores into weights that add up to 1, then blend the Values together using those weights.</p>
+        <p><strong>Q</strong> (query), <strong>K</strong> (key) and <strong>V</strong> (value) are three projections of the same input embeddings. <span class="mono">QKᵀ</span> scores how much every word should attend to every other word; dividing by <span class="mono">√d<sub>k</sub></span> keeps those scores from getting too large; <strong>softmax</strong> turns each row of scores into weights that sum to 1 (the w₁, w₂, w₃ above); multiplying by <strong>V</strong> then builds the weighted sum. Run it on real numbers below.</p>
+      </section>
+
+      <section class="sec" id="t2-qkv">
+        <span class="flow-tag">HOW</span>
+        <h2><span class="section-icon">🗝️</span> Q, K, V — a dictionary analogy</h2>
+        <p>The notes borrow a very ordinary idea to make Query/Key/Value click: a Python dictionary. Say <span class="mono">D = {a: 1, b: 2, c: 3}</span>. Looking up <span class="mono">D[a]</span> means: compare your <strong>query</strong> ("a") against every <strong>key</strong> in the dictionary ("a", "b", "c"), and return the matching <strong>value</strong> (1).</p>
+        <p>Self-attention does the same thing with vectors instead of exact string matches. Every word produces its own Query, Key, <em>and</em> Value vector. To update "bank," take <strong>bank's Query</strong> and compare it — via dot product — against the <strong>Key</strong> of every word in the sentence:</p>
+        <div class="panel mono" style="font-size:13.5px;">
+          s₁ = Query(bank) · Key(money) &nbsp;·&nbsp; s₂ = Query(bank) · Key(bank) &nbsp;·&nbsp; s₃ = Query(bank) · Key(grow)
+        </div>
+        <p style="margin-top:10px;">A dot product is just "how aligned are two vectors" — e.g. [1,2]·[3,4] = 1×3 + 2×4 = 11, a single similarity score. Feed s₁, s₂, s₃ through softmax to get the weights w₁, w₂, w₃ — then use those weights on each word's <strong>Value</strong> vector (not its raw embedding) to build the final contextual vector for "bank." Q and K decide <em>how much</em> to listen to each word; V is <em>what gets passed along</em> once you've decided to listen.</p>
+        <div class="row" style="margin-top:14px;">
+          <div class="panel"><strong>Self-attention</strong><br><span style="color:var(--ink-dim);font-size:13px;">Q, K, and V all come from the <em>same</em> sequence — words attending to their own sentence.</span></div>
+          <div class="panel"><strong>Cross-attention</strong><br><span style="color:var(--ink-dim);font-size:13px;">Q comes from the decoder; K and V come from the encoder — the output sentence "reads" the input sentence.</span></div>
+          <div class="panel"><strong>Masked self-attention</strong><br><span style="color:var(--ink-dim);font-size:13px;">Same as self-attention, but a word's Query is blocked from seeing Keys/Values of words that come after it.</span></div>
+        </div>
+        <div class="callout extra">
+          <div class="callout-label">Beyond the notes</div>
+          "Multi-head" attention just means running several of these Q/K/V computations in parallel — each "head" with its own learned projections, free to specialize (one head might track grammar, another might track which pronoun refers to which noun) — then concatenating every head's output back together.
+        </div>
+      </section>
+
+      <section class="sec" id="t2-handson">
+        <span class="flow-tag">TRY IT</span>
+        <h2><span class="section-icon">🧪</span> Try it yourself — mini self-attention calculator <span class="real-badge">REAL MATH</span><span class="toy-badge">TOY DATA</span></h2>
+        <p>This runs the real self-attention formula, softmax(QKᵀ/√d)·V, on small fixed 3‑dimensional "toy" word vectors (not a trained model — just enough numbers to make the mechanism visible). Pick a sentence, then pick which word to inspect, and see its attention weights and output vector.</p>
+        <div class="panel">
+          <div class="row" style="margin-bottom:10px;">
+            <button class="btn" id="attn-btn-A" onclick="setAttnSentence('A')">S₁: money · bank · grows</button>
+            <button class="btn ghost" id="attn-btn-B" onclick="setAttnSentence('B')">S₂: river · bank · flows</button>
+          </div>
+          <div class="row" style="margin-bottom:10px;">
+            <div id="attn-focus-chips"></div>
+          </div>
+          <div id="attn-output"></div>
+          <div class="callout">
+            <div class="callout-label">💡 What should I notice?</div>
+            Notice how "bank" gets pulled toward different words depending on which sentence it's in — same starting vector, different weights, different output vector.
+          </div>
+        </div>
+      </section>
+
+      <section class="sec" id="t2-notes">
+        <h2><span class="section-icon">⚖️</span> Why it matters</h2>
+        <table>
+          <tr><th>Feature</th><th>Encoding (One-hot / TF-IDF)</th><th>Neural Net Embedding (Word2Vec)</th><th>Transformer Embedding</th></tr>
+          <tr><td>Meaning capture</td><td>No semantics</td><td>Some semantics</td><td>Deep contextual semantics</td></tr>
+          <tr><td>Context awareness</td><td>None</td><td>Limited (window-based)</td><td>Full sequence — bidirectional in the encoder, causal (left-to-right only) in the decoder</td></tr>
+          <tr><td>Vector type</td><td>Sparse</td><td>Dense</td><td>Dense</td></tr>
+          <tr><td>Same word embedding</td><td>Same vector always</td><td>Same vector always</td><td>Different per context</td></tr>
+        </table>
+        <div class="callout">
+          <div class="callout-label">Important nuance</div>
+          "Full context" isn't unconditional — it depends on which stack you're in. The <strong>encoder</strong> genuinely sees the whole sequence at once (bidirectional — every position attends to every other position, before and after it). The <strong>decoder</strong> never gets that: it's masked so each position can only attend to itself and earlier positions (see the masking calculator and the encoder/decoder topics) — otherwise it could "peek" at the answer it's supposed to predict.
+        </div>
+        <div class="callout extra">
+          <div class="callout-label">Beyond the notes</div>
+          Real transformers don't feed raw word vectors into attention — they first project each word through <em>learned</em> weight matrices W_Q, W_K, W_V to get Query, Key and Value vectors. The calculator above skips that learned projection for clarity (Q = K = V = the toy embedding) so the softmax‑weighting idea stays front and center.
+        </div>
+      </section>
+
+      <section class="sec" id="t2-quiz">
+        <div class="quiz-head"><h2 style="margin:0;"><span class="section-icon">📝</span> Quick check</h2><button class="btn ghost" onclick="renderQuiz('t2')">Reset quiz</button></div>
+        <div id="t2-quiz-body"></div>
+      </section>
+
+      <section class="sec" id="t2-mastery">
+        <h2><span class="section-icon">🏆</span> Master this topic</h2>
+        <div id="mastery-t2"></div>
+      </section>
+
+      <div id="topicnav-topic2"></div>
+
+      <div id="footer-topic2"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ================= TOPIC 3 ================= -->
+<div class="view topic-page" id="topic3" data-accent="cyan">
+  <div class="topbar">
+    <button class="back-btn" onclick="openTopic('landing')">← All topics</button>
+    <div class="badge" style="background:var(--ac)">3</div>
+    <div class="topbar-title">Inside the Transformer — Encoder & Decoder</div>
+    <span class="topbar-progress" id="topbar-progress-topic3"></span>
+    <button class="btn ghost topbar-glossary-btn" onclick="openGlossary()">📖 Glossary</button>
+  </div>
+  <div class="topic-body">
+    <nav class="sidebar" id="sidebar-topic3"></nav>
+    <div class="content">
+      <h1 class="page-title">Inside the Transformer — Encoder & Decoder</h1>
+      <div class="mobile-nav" id="mobilenav-topic3"></div>
+      <p class="page-sub">The full "Attention Is All You Need" architecture, step by step.</p>
+      <section class="sec" id="t3-revision">
+        <div class="revision-panel">
+          <div class="rp-label">⚡ 5-Minute Revision</div>
+          <ul>
+          <li>Pipeline: Text → Tokenize → Embed → + Positional Encoding → Self-Attention → Add &amp; Norm → FFN → Add &amp; Norm (× N blocks).</li>
+          <li>Positional Encoding: <span class="mono">PE(pos,2i)=sin(pos/10000^(2i/d)), PE(pos,2i+1)=cos(...)</span> — <strong>added</strong> (not concatenated) to embeddings.</li>
+          <li>Add &amp; Norm = residual connection (x + z) then LayerNorm: <span class="mono">LayerNorm(x) = ((x−μ)/√(σ²+ε))·γ+β</span>.</li>
+          <li>Residuals let each layer learn a small improvement over its input instead of a whole new transformation — critical for deep stacking.</li>
+          <li>FFN(x) = ReLU(x·W₁+b₁)·W₂+b₂ — a per-token non-linear transform (512→2048→512 in the original paper).</li>
+          <li>N (block count) is a hyperparameter — small in the original paper, much larger in modern models (exact numbers in the Deep Dive below).</li>
+          <li>Modern decoder-only LLMs (GPT, Llama) drop the encoder entirely and stack only masked self-attention blocks.</li>
+          </ul>
+        </div>
+      </section>
+
+
+      <section class="sec" id="t3-concept">
+        <span class="flow-tag">WHY</span>
+        <h2><span class="section-icon">💡</span> The two stacks</h2>
+        <p>The original Transformer (built for machine translation) has two stacks: an <strong>encoder</strong> that reads the input sentence, and a <strong>decoder</strong> that generates the output sentence one token at a time, using both its own previous outputs and the encoder's result. Blocks are structurally identical <em>within</em> each stack — same layer types in the same order, though each has its own independently learned weights, not shared ones. But encoder blocks and decoder blocks are <strong>not</strong> identical to each other: a decoder block has an extra cross-attention sub-layer (so it can attend to the encoder's output) that an encoder block doesn't have. Later models kept only one side: <strong>BERT keeps only the encoder</strong>, <strong>GPT keeps only the decoder</strong>.</p>
+        <div class="diagram-wrap" id="t3-diagram"></div>
+      </section>
+
+      <section class="sec" id="t3-pipeline">
+        <span class="flow-tag">WHAT</span>
+        <h2><span class="section-icon">🔤</span> Data → output, in one line</h2>
+        <p>Every encoder/decoder block below is really just an unpacking of one pipeline:</p>
+        <div class="panel mono" style="text-align:center;font-size:14px;">Text → Tokenization → Embedding Layer → Positional Encoding → Self-Attention → FFN → Output</div>
+        <p style="margin-top:12px;">One nuance worth pinning down: the <strong>embedding layer</strong> in a Transformer looks a lot like Word2Vec — it turns each token into a dense vector — but it is <strong>not</strong> a pretrained Word2Vec model. By default it's a trainable layer that starts from random weights and learns its own word vectors <em>while the rest of the Transformer is training</em>, jointly with everything downstream.</p>
+      </section>
+
+      <section class="sec" id="t3-order">
+        <h2><span class="section-icon">🔀</span> Why order matters (and why Positional Encoding exists)</h2>
+        <p>Self-attention looks at "every word at once" — which also means, on its own, it has <strong>no idea which word came first</strong>. But word order changes meaning. Shuffle the sentence below and see for yourself:</p>
+        <div class="panel">
+          <div id="t3-order-chips" class="mono" style="font-size:14.5px;"></div>
+          <button class="btn" style="margin-top:12px;" onclick="shuffleOrderDemo()">🔀 Shuffle word order</button>
+          <button class="btn ghost" style="margin-top:12px;" onclick="resetOrderDemo()">Reset</button>
+          <p id="t3-order-note" style="margin-top:10px;font-size:13px;color:var(--ink-dim);"></p>
+        </div>
+        <p style="margin-top:12px;">That's exactly why <strong>Positional Encoding</strong> is added to every input embedding: it injects an explicit position signal so the model can tell "Sunny is taking GenAI class" apart from a scrambled bag of the same words — something an RNN got "for free" by reading strictly left-to-right, but a fully parallel Transformer has to be told explicitly.</p>
+        <p style="margin-top:10px;color:var(--ink-dim);font-size:13.5px;">The classic pair the notes use to make this concrete: <span class="mono">"Dog bites man"</span> vs. <span class="mono">"Man bites dog"</span> — same three words, opposite meaning, purely from order.</p>
+      </section>
+
+      <section class="sec" id="t3-pe">
+        <span class="flow-tag">FORMULA</span>
+        <h2><span class="section-icon">📐</span> Positional encoding, computed <span class="real-badge">REAL MATH</span></h2>
+        <p><strong>Definition:</strong> Positional encoding is a technique that injects information about a token's position into its embedding, so the model can recover sequence order even though it processes every token in parallel.</p>
+        <p>A tempting first idea: just tag each token with its index — 1, 2, 3, …, n. The notes flag two real problems with that:</p>
+        <div class="row">
+          <div class="panel"><strong>1. No natural limit</strong><br><span style="color:var(--ink-dim);font-size:13.5px;">Real sentences (or documents) can run to thousands of tokens — there's no fixed ceiling to design around.</span></div>
+          <div class="panel"><strong>2. Discrete, unbounded numbers</strong><br><span style="color:var(--ink-dim);font-size:13.5px;">Feeding raw integers like 1, 2, 3 … 10000 into a network as a "position vector" gives it wildly different magnitudes to learn from — training becomes unstable.</span></div>
+        </div>
+        <p>The fix: encode position with <strong>sine and cosine</strong> waves instead — smooth, continuous, and always bounded between -1 and +1, no matter how long the sequence gets:</p>
+        <div class="panel mono" style="font-size:14px;text-align:center;padding:20px;">
+          PE(pos, 2i) = sin( pos / 10000<sup>2i/d_model</sup> )<br>
+          PE(pos, 2i+1) = cos( pos / 10000<sup>2i/d_model</sup> )
+        </div>
+        <p class="plain-english"><em>In plain English:</em> give every position in the sentence its own smooth, bounded wave-based "fingerprint", so the model can tell how far apart two tokens are without ever using a raw, unbounded position number.</p>
+        <p><span class="mono">pos</span> is the token's position (0, 1, 2, …), <span class="mono">d_model</span> is the embedding dimension, and <span class="mono">i</span> ranges from 0 up to (d_model/2 − 1) — alternating sine and cosine fills every dimension of the positional vector, one pair at a time. This positional vector is then <strong>added</strong> (not concatenated) to the word's embedding — same reasoning as Add & Norm below: addition keeps the dimension unchanged.</p>
+
+        <div class="panel">
+          <strong>Try it yourself — compute a real positional encoding</strong> <span class="real-badge">REAL MATH</span>
+          <p style="margin:8px 0 14px;font-size:13.5px;color:var(--ink-dim);">Pick a position and an embedding dimension (must be even) and see the exact vector the formula above produces.</p>
+          <div class="row">
+            <div><label class="field-label">Position (pos)</label><input type="text" id="pe-pos" value="1" oninput="renderPE()"></div>
+            <div><label class="field-label">Embedding dimension (d_model, even)</label><input type="text" id="pe-dim" value="6" oninput="renderPE()"></div>
+          </div>
+          <div class="nums-wrap" id="numswrap-pe">
+          <button class="btn ghost numtoggle-btn" onclick="toggleNumbers('numswrap-pe', this)">Hide numbers</button>
+          <div id="pe-output" style="margin-top:14px;" class="nums-content"></div>
+          <p class="nums-fallback">Numbers hidden — click "Show numbers" above to see the exact values.</p>
+        </div>
+          <div class="callout">
+            <div class="callout-label">💡 What should I notice?</div>
+            Notice how sin and cos alternate across the dimensions, and how pos=0 always gives sin=0 — every dimension starts the wave at a slightly different frequency.
+          </div>
+        </div>
+      </section>
+
+      <section class="sec" id="t3-encoder">
+        <span class="flow-tag">HOW</span>
+        <h2><span class="section-icon">⚙️</span> Encoder side, step by step</h2>
+        <p>Click a step to see it explained and highlighted above.</p>
+        <div class="arch-steps" id="t3-encoder-steps"></div>
+        <div class="arch-detail" id="t3-encoder-detail">Click a step above ↑</div>
+      </section>
+
+      <section class="sec" id="t3-decoder">
+        <span class="flow-tag">HOW</span>
+        <h2><span class="section-icon">⚙️</span> Decoder side, step by step</h2>
+        <p>Same idea, with two extra ingredients: <strong>masking</strong> (so a token can't peek at future tokens) and <strong>cross-attention</strong> (so the decoder can consult the encoder's output).</p>
+        <div class="arch-steps" id="t3-decoder-steps"></div>
+        <div class="arch-detail" id="t3-decoder-detail">Click a step above ↑</div>
+      </section>
+
+      <section class="sec" id="t3-addnorm">
+        <h2><span class="section-icon">➕</span> Add & Norm — residual connections</h2>
+        <p>After self-attention turns inputs x₁, x₂, x₃ into z₁, z₂, z₃, the block doesn't just pass z forward — it <strong>adds</strong> the original input back in (z + x), then normalizes the result (Layer Normalization), before handing it to the feed-forward layer. That "+x" is the residual (a.k.a. <strong>skip connection</strong> — the same idea ResNet popularized for CNNs).</p>
+        <div class="row">
+          <div class="panel">
+            <strong>Why deep networks need this</strong>
+            <p style="margin:8px 0 0;color:var(--ink-dim);font-size:13.5px;">Stacked deep networks suffer from vanishing gradients, unstable training, and information getting lost layer over layer.</p>
+          </div>
+          <div class="panel">
+            <strong>What the residual buys you</strong>
+            <p style="margin:8px 0 0;color:var(--ink-dim);font-size:13.5px;">Instead of forcing each layer to learn a "completely new transformation," it only has to learn a <em>small improvement over its input</em> — better gradient flow, faster training, less information loss, and it makes deep stacking (6, 12, 24+ layers) practical at all.</p>
+          </div>
+        </div>
+        <div class="callout extra">
+          <div class="callout-label">Beyond the notes</div>
+          This is also why the residual step uses <strong>addition</strong> (x + z, element-wise, same dimension in and out) rather than <strong>concatenation</strong> (joining x and z side by side, e.g. [1,2,3] + [5,6,7] → [1,2,3,5,6,7]). Concatenation would grow the vector's size at every layer; addition keeps it fixed, so the same-shaped block can be stacked N times.
+        </div>
+
+        <h3 style="margin-top:26px;font-size:16px;">The "Norm" half: Layer Normalization</h3>
+        <p>"Add" is the residual step above; "Norm" is what runs on the result right after — <strong>Layer Normalization</strong>. The notes' own definition: <em>"Layer normalization standardizes the features of each vector to improve training stability and performance"</em> — it normalizes a vector, then scales and shifts it using two learnable parameters.</p>
+        <div class="panel mono" style="text-align:center;font-size:16px;padding:22px;">
+          LayerNorm(x) = ( (x − μ) ⁄ √(σ² + ε) ) · γ + β
+        </div>
+        <p class="plain-english"><em>In plain English:</em> re-center and re-scale a single vector's own numbers so they sit in a stable, well-behaved range, then let the model learn (via γ and β) whether it wants to stretch or shift that range back out again.</p>
+        <table>
+          <tr><th>Symbol</th><th>Meaning</th></tr>
+          <tr><td>x</td><td>input vector (e.g. a token's context embedding)</td></tr>
+          <tr><td>μ</td><td>mean of that vector's own features</td></tr>
+          <tr><td>σ²</td><td>variance of that vector's own features</td></tr>
+          <tr><td>ε</td><td>a tiny constant, only there to avoid dividing by zero</td></tr>
+          <tr><td>γ</td><td>learnable scale parameter (starts at 1)</td></tr>
+          <tr><td>β</td><td>learnable shift parameter (starts at 0) — <span class="mono">"gives the model the freedom to choose where the data should be centered"</span></td></tr>
+        </table>
+
+        <div class="callout">
+          <div class="callout-label">Worked example, straight from the notes</div>
+          Input vector <span class="mono">x = [0.8, -1.2, 2.4]</span> (a toy context embedding for "money"):
+          <div class="mono" style="margin-top:8px;line-height:1.9;">
+            μ = (0.8 + (−1.2) + 2.4) / 3 ≈ <strong>0.67</strong><br>
+            σ² = [(0.8−0.67)² + (−1.2−0.67)² + (2.4−0.67)²] / 3 ≈ <strong>2.17</strong><br>
+            √(σ²) ≈ <strong>1.47</strong><br>
+            x_norm = (x − μ) / 1.47 ≈ <strong>[0.09, −1.27, 1.18]</strong><br>
+            with γ=[1,1,1], β=[0,0,0] → y = x_norm · γ + β = <strong>[0.09, −1.27, 1.18]</strong> (identity, since γ,β haven't learned anything yet)
+          </div>
+        </div>
+
+        <div class="panel">
+          <strong>Try it yourself — real LayerNorm calculator</strong> <span class="real-badge">REAL MATH</span>
+          <p style="margin:8px 0 14px;font-size:13.5px;color:var(--ink-dim);">Enter any vector (comma-separated) and, optionally, γ and β of the same length. Defaults to the worked example above.</p>
+          <div class="row">
+            <div><label class="field-label">x (vector)</label><input type="text" id="ln-x" value="0.8, -1.2, 2.4" oninput="renderLN()"></div>
+            <div><label class="field-label">γ (gamma, optional)</label><input type="text" id="ln-g" value="1, 1, 1" oninput="renderLN()"></div>
+            <div><label class="field-label">β (beta, optional)</label><input type="text" id="ln-b" value="0, 0, 0" oninput="renderLN()"></div>
+          </div>
+          <div class="nums-wrap" id="numswrap-ln">
+          <button class="btn ghost numtoggle-btn" onclick="toggleNumbers('numswrap-ln', this)">Hide numbers</button>
+          <div id="ln-output" style="margin-top:14px;" class="nums-content"></div>
+          <p class="nums-fallback">Numbers hidden — click "Show numbers" above to see the exact values.</p>
+        </div>
+          <div class="callout">
+            <div class="callout-label">💡 What should I notice?</div>
+            Notice x_norm always ends up with mean ≈ 0 and unit-ish spread, regardless of the input scale — that's the whole point of normalizing before γ and β get a chance to rescale it.
+          </div>
+        </div>
+
+        <h3 style="margin-top:26px;font-size:16px;">Why LayerNorm matters</h3>
+        <div class="row">
+          <div class="panel"><strong>1. Stabilizes training</strong><br><span style="color:var(--ink-dim);font-size:13.5px;">Keeps values in a controlled range → prevents exploding or very large activations.</span></div>
+          <div class="panel"><strong>2. Improves gradient flow</strong><br><span style="color:var(--ink-dim);font-size:13.5px;">Avoids vanishing/exploding gradients → helps deep transformer stacks train smoothly.</span></div>
+          <div class="panel"><strong>3. Faster convergence</strong><br><span style="color:var(--ink-dim);font-size:13.5px;">Inputs to each layer stay well-conditioned (consistent scale) → the model learns faster.</span></div>
+        </div>
+
+        <h3 style="margin-top:26px;font-size:16px;">LayerNorm vs. other scaling methods</h3>
+        <table>
+          <tr><th>Method</th><th>Formula</th><th>Normalizes across</th></tr>
+          <tr><td>Min-Max Scaling</td><td class="mono">(x − min) / (max − min)</td><td>rescales into a fixed range, e.g. [0, 1]</td></tr>
+          <tr><td>Standard Scaler</td><td class="mono">(x − μ) / σ</td><td>zero mean, unit variance (a column/feature, typically)</td></tr>
+          <tr><td>Layer Normalization</td><td class="mono">(x − μ) / √(σ² + ε) · γ + β</td><td>all the features of one vector, then re-scaled/shifted by learnable γ, β</td></tr>
+        </table>
+      </section>
+
+      <section class="sec" id="t3-ffn">
+        <h2><span class="section-icon">🧠</span> Why a feed-forward layer at all?</h2>
+        <p>Self-attention's whole job is mixing information <em>across</em> tokens — learning word-level relationships. It never asks "given everything I now know about this token, what should I do with it?" That's the feed-forward network's (FFN) job: it processes each token's vector independently, adding non-linearity so the model can learn genuinely complex patterns, not just straight-line ones.</p>
+        <div class="panel mono" style="text-align:center;font-size:15px;padding:20px;">FFN(x) = ReLU(x·W₁ + b₁)·W₂ + b₂</div>
+        <p class="plain-english"><em>In plain English:</em> take each token's vector (independently of every other token), pass it through one non-linear "thinking" layer, then project it back down to the original size.</p>
+        <p>In the original paper this expands each 512-dimensional token vector up to a 2048-dimensional hidden layer and back down to 512 — <span class="mono">512 → 2048 → 512</span> — giving the network room to learn richer, non-linear structure before compressing back to the block's working size.</p>
+      </section>
+
+      <section class="sec" id="t3-stacking">
+        <h2><span class="section-icon">🧱</span> Why stack N encoder/decoder blocks?</h2>
+        <div class="dd-toggle" onclick="toggleDeepDive('t3-stacking')"><span>🔬 Deep Dive: Why stack N encoder/decoder blocks?</span><span id="ddchev-t3-stacking">▸ Show</span></div>
+        <div class="dd-body dd-collapsed" id="ddbody-t3-stacking">
+<p>The number of blocks (N) is a <strong>hyperparameter</strong> — an experimental value, not a fixed law. The original paper used 6 encoder blocks and 6 decoder blocks. Blocks within a stack share the same structure; encoder and decoder blocks don't — decoder blocks add an extra cross-attention sub-layer that encoder blocks lack. Stacking helps the model capture deeper relationships, understand longer context, and build hierarchical meaning — each layer refines the representation a bit further:</p>
+        <table>
+          <tr><th>Layer (illustrative)</th><th>What it tends to capture</th></tr>
+          <tr><td>Layer 1</td><td>Basic word relations</td></tr>
+          <tr><td>Layer 3</td><td>Phrase-level meaning</td></tr>
+          <tr><td>Layer 6</td><td>Sentence-level understanding</td></tr>
+          <tr><td>Layer 12</td><td>Deep context</td></tr>
+        </table>
+        <p style="margin-top:10px;">Modern models push this much further: <strong>BERT Base</strong> uses 12 layers, <strong>BERT Large</strong> uses 24, and <strong>GPT</strong>-family models range from 12 up to 96+ layers.</p>
+        </div>
+      </section>
+
+      <section class="sec" id="t3-evolution">
+        <h2><span class="section-icon">🔧</span> How the architecture evolved</h2>
+        <div class="dd-toggle" onclick="toggleDeepDive('t3-evolution')"><span>🔬 Deep Dive: How the architecture evolved</span><span id="ddchev-t3-evolution">▸ Show</span></div>
+        <div class="dd-body dd-collapsed" id="ddbody-t3-evolution">
+<p>Modern LLMs (GPT, Llama, and almost every other well-known model) do <strong>not</strong> keep the original encoder–decoder skeleton — they drop the encoder and the cross-attention that connects it to the decoder entirely, and stack <em>only</em> decoder blocks (with masked self-attention) end to end. The original 2017 paper's two-stack, encoder+decoder design was built for translation, where you genuinely have a separate source sentence and target sentence. A general-purpose LLM just keeps predicting the next token of one continuous sequence, so a single masked (decoder-only) stack is all it needs — see the BERT vs. GPT topic for why "decoder-only" became the dominant shape for generative LLMs.</p>
+        <p>What <em>does</em> carry over from the original architecture into modern decoder-only LLMs is the core machinery this guide covers — masked self-attention, add & norm, feed-forward blocks, stacking N blocks — just refined: RMSNorm instead of LayerNorm, SwiGLU feed-forward layers, grouped multi-query attention with a KV cache for faster inference, and rotary positional embeddings (RoPE) instead of fixed sinusoidal PE.</p>
+        <div class="callout extra">
+          <div class="callout-label">Beyond the notes</div>
+          The class notes sketch a Transformer-vs-Llama block diagram without deriving each component — treat the refinements above as a pointer to what to study next, not a full explanation here. The one correction worth internalizing regardless: "Llama-style" does not mean "encoder-decoder with upgrades" — it means decoder-only.
+        </div>
+        </div>
+      </section>
+
+      <section class="sec" id="t3-recap">
+        <h2><span class="section-icon">🎯</span> Interview-ready recap</h2>
+        <p>The notes frame the encoder around six questions worth being able to answer cold:</p>
+        <div class="callout">
+          <div class="callout-label">Can you explain each of these?</div>
+          1. What is Positional Encoding, and why is it needed?<br>
+          2. What is (self-)Attention, mechanically?<br>
+          3. What does Layer Normalization do?<br>
+          4. What is a Residual Connection?<br>
+          5. Why did they use a residual connection?<br>
+          6. Why is a feed-forward (NN) layer needed after attention?
+        </div>
+      </section>
+
+      <section class="sec" id="t3-quiz">
+        <div class="quiz-head"><h2 style="margin:0;"><span class="section-icon">📝</span> Quick check</h2><button class="btn ghost" onclick="renderQuiz('t3')">Reset quiz</button></div>
+        <div id="t3-quiz-body"></div>
+      </section>
+
+      <section class="sec" id="t3-mastery">
+        <h2><span class="section-icon">🏆</span> Master this topic</h2>
+        <div id="mastery-t3"></div>
+      </section>
+
+      <div id="topicnav-topic3"></div>
+
+      <div id="footer-topic3"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ================= TOPIC 5 ================= -->
+<div class="view topic-page" id="topic4" data-accent="green">
+  <div class="topbar">
+    <button class="back-btn" onclick="openTopic('landing')">← All topics</button>
+    <div class="badge" style="background:var(--ac)">4</div>
+    <div class="topbar-title">Multi-Head, Cross & Masked Attention</div>
+    <span class="topbar-progress" id="topbar-progress-topic4"></span>
+    <button class="btn ghost topbar-glossary-btn" onclick="openGlossary()">📖 Glossary</button>
+  </div>
+  <div class="topic-body">
+    <nav class="sidebar" id="sidebar-topic4"></nav>
+    <div class="content">
+      <h1 class="page-title">Multi-Head, Cross & Masked Attention</h1>
+      <div class="mobile-nav" id="mobilenav-topic4"></div>
+      <p class="page-sub">Many viewpoints at once, attending across sequences, and hiding the future.</p>
+      <section class="sec" id="t4-revision">
+        <div class="revision-panel">
+          <div class="rp-label">⚡ 5-Minute Revision</div>
+          <ul>
+          <li>A <strong>head</strong> = its own W<sub>Q</sub>, W<sub>K</sub>, W<sub>V</sub>. <strong>Multi-head</strong> = several heads run in parallel, each free to specialize.</li>
+          <li>Formula: <span class="mono">MultiHead(Q,K,V) = Concat(head₁,…,head_N)·W<sub>O</sub></span>.</li>
+          <li>The original paper used 8 heads — but head count is a tunable hyperparameter, not a law.</li>
+          <li>Masking: add −∞ to future positions before softmax → <span class="mono">softmax(−∞)=0</span> → causal (left-to-right only) attention.</li>
+          <li>Cross-attention: <strong>Query from the decoder</strong>, <strong>Key/Value from the encoder</strong> — how the decoder "reads" the source sentence.</li>
+          </ul>
+        </div>
+      </section>
+
+
+      <section class="sec" id="t4-concept">
+        <span class="flow-tag">WHY</span>
+        <h2><span class="section-icon">💡</span> Why one head isn't enough</h2>
+        <p>A <strong>head</strong> is a self-attention mechanism defined by its own W<sub>Q</sub>, W<sub>K</sub>, W<sub>V</sub> projection matrices. One head means one set of those three matrices — one "viewpoint" on the sentence. <strong>Multi-head</strong> attention just means running <em>several</em> independent heads in parallel, each with its own learned W<sub>Q</sub>/W<sub>K</sub>/W<sub>V</sub>, so the model gets multiple viewpoints at the same time.</p>
+        <p>Three reasons this matters:</p>
+        <div class="row">
+          <div class="panel"><strong>1. Ambiguous sentences are everywhere in NLP</strong><br><span style="color:var(--ink-dim);font-size:13.5px;">A single sentence often supports more than one valid reading.</span></div>
+          <div class="panel"><strong>2. A single head can only capture one perspective</strong><br><span style="color:var(--ink-dim);font-size:13.5px;">One set of Q/K/V learns one kind of relationship well — syntax, or coreference, or position — rarely all of them at once.</span></div>
+          <div class="panel"><strong>3. Real sentences have multiple perspectives simultaneously</strong><br><span style="color:var(--ink-dim);font-size:13.5px;">Grammar, meaning, and reference all matter at the same time — so the model needs several heads working in parallel, each free to specialize.</span></div>
+        </div>
+        <div class="callout">
+          <div class="callout-label">The ambiguity examples from the notes</div>
+          <strong>"The chicken is ready to eat."</strong> Does that mean the chicken is cooked and ready to be eaten, or that the chicken (some hungry animal) is ready to eat something? One attention pattern might link "chicken" ↔ "ready" as "the thing being prepared"; another might link "chicken" ↔ "eat" as "the one doing the eating." Different heads can hold both relationships at once.<br><br>
+          <strong>"Man saw the astronomer with the telescope."</strong> Who has the telescope — the man, or the astronomer? A single attention pattern picks one attachment; multiple heads can represent both candidate relationships in parallel, leaving later layers (and training) to weigh which one the sentence actually intends.
+        </div>
+        <p>The original <em>"Attention Is All You Need"</em> paper used <strong>8 heads</strong> — but the number of heads (N) is a tunable <strong>hyperparameter</strong>, not a law of nature. One head → one set of Q, K, V; multi-head → multiple independent sets, computed in parallel and then combined.</p>
+      </section>
+
+      <section class="sec" id="t4-mechanics">
+        <span class="flow-tag">FORMULA</span>
+        <h2><span class="section-icon">🧩</span> Concat + output projection</h2>
+        <div class="dd-toggle" onclick="toggleDeepDive('t4-mechanics')"><span>🔬 Deep Dive: Concat + output projection</span><span id="ddchev-t4-mechanics">▸ Show</span></div>
+        <div class="dd-body dd-collapsed" id="ddbody-t4-mechanics">
+<p>Formally:</p>
+        <div class="panel mono" style="text-align:center;font-size:15px;padding:20px;">
+          MultiHead(Q, K, V) = Concat(head₁, …, head_N) · W<sub>O</sub><br>
+          <span style="font-size:13px;color:var(--ink-dim);">where head<sub>i</sub> = Attention(Q·W<sub>Qᵢ</sub>, K·W<sub>Kᵢ</sub>, V·W<sub>Vᵢ</sub>)</span>
+        </div>
+        <p class="plain-english"><em>In plain English:</em> run several independent, smaller attention computations side by side (each with its own learned Q/K/V lens on the sentence), glue their outputs together, then use one more learned matrix to squeeze that wide result back down to the model's normal working size.</p>
+        <p>Each head runs the full scaled dot-product attention formula independently, on its <em>own</em> smaller projection of Q, K, V (e.g. the original paper splits d_model=512 across 8 heads → 64 dimensions per head). Every head's output is then <strong>concatenated</strong> side by side into one wide vector, and that wide vector is passed through one more learned matrix, <strong>W<sub>O</sub></strong> (the output projection), which mixes the heads back down to the model's working width — so the next layer still sees a normal-sized vector no matter how many heads ran.</p>
+        <div class="callout extra">
+          <div class="callout-label">Illustrative 2-head example (toy numbers)</div>
+          Say each head outputs a 2-dimensional vector for the word "money": head₁ → <span class="mono">[0.6, -0.2]</span>, head₂ → <span class="mono">[0.1, 0.9]</span>. Concatenating gives a 4-dim vector <span class="mono">[0.6, -0.2, 0.1, 0.9]</span>. A learned W<sub>O</sub> (here 4×2, purely illustrative) would then project that back down to a 2-dim output — e.g. something like <span class="mono">[0.35, 0.41]</span> — so a 2-head, 2-dim-per-head setup still hands the next layer a plain 2-dim vector, exactly like a single-head setup would.
+        </div>
+        </div>
+      </section>
+
+      <section class="sec" id="t4-handson">
+        <span class="flow-tag">TRY IT</span>
+        <h2><span class="section-icon">🧪</span> Try it yourself — two-head self-attention calculator <span class="real-badge">REAL MATH</span><span class="toy-badge">TOY DATA</span></h2>
+        <p>This runs the real self-attention formula (softmax(QKᵀ/√d)·V) <strong>twice</strong>, on two different toy embedding sets for the same sentence — simulating two heads with two different learned W<sub>Q</sub>/W<sub>K</sub>/W<sub>V</sub> projections. <span style="color:var(--ink-dim);">(Toy simplification: head 2's vectors here are just a fixed, disclosed transform of head 1's — a real model learns two genuinely independent projections during training.)</span></p>
+        <div class="panel">
+          <div class="row" style="margin-bottom:10px;">
+            <button class="btn" id="t4-btn-A" onclick="setT5Sentence('A')">S₁: money · bank · grows</button>
+            <button class="btn ghost" id="t4-btn-B" onclick="setT5Sentence('B')">S₂: chicken · is · ready</button>
+          </div>
+          <div id="t4-output"></div>
+          <div class="callout">
+            <div class="callout-label">💡 What should I notice?</div>
+            Notice Head 1 and Head 2 spread their attention differently across the same words — that's the entire benefit of multi-head attention: several independent viewpoints on one sentence, combined at the end.
+          </div>
+        </div>
+      </section>
+
+      <section class="sec" id="t4-masked">
+        <span class="flow-tag">TRY IT</span>
+        <h2><span class="section-icon">🚫</span> Try it yourself — masking calculator <span class="real-badge">REAL MATH</span><span class="toy-badge">TOY DATA</span></h2>
+        <p><strong>Masked self-attention</strong> is self-attention where future tokens are blocked, so each token can only attend to itself and the tokens before it. Mechanically: add a mask matrix of 0s and −∞ to the scaled score matrix <em>before</em> softmax — 0 for allowed positions (i.e., i ≥ j), −∞ for blocked future positions (i.e., j &gt; i). Since <span class="mono">softmax(−∞) = 0</span>, those positions vanish from the weighted sum automatically.</p>
+        <div class="panel">
+          <div class="row" style="margin-bottom:10px;">
+            <button class="btn" id="t4-mask-on" onclick="setMaskMode(true)">With masking (decoder-style)</button>
+            <button class="btn ghost" id="t4-mask-off" onclick="setMaskMode(false)">Without masking</button>
+          </div>
+          <div class="nums-wrap" id="numswrap-mask">
+          <button class="btn ghost numtoggle-btn" onclick="toggleNumbers('numswrap-mask', this)">Hide numbers</button>
+          <div class="nums-content" id="t4-mask-output"></div>
+          <p class="nums-fallback">Numbers hidden — click "Show numbers" above to see the exact values.</p>
+        </div>
+          <div class="callout">
+            <div class="callout-label">💡 What should I notice?</div>
+            Notice the upper-right triangle is always exactly 0 when masking is on — that's the causal mask making sure no position can ever see a future token.
+          </div>
+        </div>
+        <div class="callout">
+          <div class="callout-label">What goes wrong without masking, during training</div>
+          1. <strong>Data leakage</strong> — the model can see the very tokens it's supposed to be predicting, so it isn't really learning to predict at all.<br>
+          2. <strong>Overfitting / an unrealistic training signal</strong> — training accuracy looks great (it's cheating), but that doesn't transfer to inference, where the model genuinely can't see the future — real-world accuracy drops.
+        </div>
+      </section>
+
+      <section class="sec" id="t4-cross">
+        <span class="flow-tag">WHAT</span>
+        <h2><span class="section-icon">🔀</span> Cross-attention</h2>
+        <p><strong>Cross-attention</strong> is a mechanism where the <strong>Query comes from the decoder</strong>, while the <strong>Key and Value come from the encoder's output</strong>. It's how the decoder "looks at" the source sentence while generating the target — the encoder is run once, and every decoder step re-attends to that same fixed encoder output.</p>
+        <div class="row">
+          <div class="panel"><strong>Self-attention</strong><br><span style="color:var(--ink-dim);font-size:13px;">Same sequence checks the importance of a word with respect to other words in <em>that same</em> sequence.</span></div>
+          <div class="panel"><strong>Cross-attention</strong><br><span style="color:var(--ink-dim);font-size:13px;">Checks the importance of a word from <em>one</em> sequence with respect to words in <em>another</em> sequence.</span></div>
+        </div>
+        <div class="callout">
+          <div class="callout-label">Worked example from the notes: "we are friends" → "हम दोस्त हैं"</div>
+          <p style="margin:0 0 8px;">English encoder tokens: <span class="mono">we, are, friend</span>. Hindi decoder tokens: <span class="mono">हम (we), दोस्त (friend), हैं (are)</span>. For each Hindi token, its Query is compared against the <strong>English Keys</strong> (not Hindi keys), and the resulting weights are applied to the <strong>English Values</strong>:</p>
+          <div class="mono" style="line-height:1.9;">
+            Contextual(हम) &nbsp;= w₁·V_we + w₂·V_are + w₃·V_friend<br>
+            Contextual(दोस्त) = w₁·V_we + w₂·V_are + w₃·V_friend<br>
+            Contextual(हैं) &nbsp;&nbsp;= w₁·V_we + w₂·V_are + w₃·V_friend
+          </div>
+          <p style="margin:8px 0 0;">Since "दोस्त" means "friend," we'd expect its cross-attention weights to land heaviest on <span class="mono">V_friend</span> — the decoder token pulling most of its meaning from the matching source word, even though the two sequences are in different languages.</p>
+        </div>
+      </section>
+
+      <section class="sec" id="t4-quiz">
+        <div class="quiz-head"><h2 style="margin:0;"><span class="section-icon">📝</span> Quick check</h2><button class="btn ghost" onclick="renderQuiz('t4')">Reset quiz</button></div>
+        <div id="t4-quiz-body"></div>
+      </section>
+
+      <section class="sec" id="t4-mastery">
+        <h2><span class="section-icon">🏆</span> Master this topic</h2>
+        <div id="mastery-t4"></div>
+      </section>
+
+      <div id="topicnav-topic4"></div>
+
+      <div id="footer-topic4"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ================= TOPIC 6 ================= -->
+<div class="view topic-page" id="topic5" data-accent="violet">
+  <div class="topbar">
+    <button class="back-btn" onclick="openTopic('landing')">← All topics</button>
+    <div class="badge" style="background:var(--ac)">5</div>
+    <div class="topbar-title">Complete Flow: Trace a Sentence</div>
+    <span class="topbar-progress" id="topbar-progress-topic5"></span>
+    <button class="btn ghost topbar-glossary-btn" onclick="openGlossary()">📖 Glossary</button>
+  </div>
+  <div class="topic-body">
+    <nav class="sidebar" id="sidebar-topic5"></nav>
+    <div class="content">
+      <h1 class="page-title">Complete Flow: Trace a Sentence</h1>
+      <div class="mobile-nav" id="mobilenav-topic5"></div>
+      <p class="page-sub">The whole encoder→decoder pipeline, plus a step-by-step simulator for your own sentence.</p>
+      <section class="sec" id="t5-revision">
+        <div class="revision-panel">
+          <div class="rp-label">⚡ 5-Minute Revision</div>
+          <ul>
+          <li>Full order: Encoder (embed → PE → self-attn → add&amp;norm → FFN → add&amp;norm) × N, then Decoder (embed → PE → masked self-attn → add&amp;norm → cross-attn → add&amp;norm → FFN → add&amp;norm) × N, then Linear → Softmax.</li>
+          <li><strong>Training</strong> is parallel — the whole target sequence is known and masked at once.</li>
+          <li><strong>Inference</strong> is sequential/autoregressive — one token generated at a time, fed back in as input for the next step.</li>
+          <li>The encoder runs <strong>once</strong>; its output is reused as Key/Value for every decoder step's cross-attention.</li>
+          <li>Final linear layer projects to vocabulary size; softmax turns those scores into a probability distribution over the next token.</li>
+          </ul>
+        </div>
+      </section>
+
+
+      <section class="sec" id="t5-concept">
+        <span class="flow-tag">WHAT</span>
+        <h2><span class="section-icon">💡</span> The running example</h2>
+        <p>Everything on this page uses one running example from the notes — a tiny machine-translation pair: English <strong>"We are friend"</strong> → Hindi <strong>"हम दोस्त हैं"</strong>. Earlier topics covered each mechanism in isolation (self-attention, multi-head, masking, cross-attention, layer norm, feed-forward). This page puts them all together, end to end, in the order they actually run — encoder first, then decoder, then the output head.</p>
+      </section>
+
+      <section class="sec" id="t5-fullflow">
+        <span class="flow-tag">HOW</span>
+        <h2><span class="section-icon">🗺️</span> Full encoder→decoder walkthrough</h2>
+        <p>Click through every stage, in order. The step tells you which stack it belongs to (encoder or decoder) and what happens to "We are friend" / "हम दोस्त हैं" at that point.</p>
+        <div class="arch-steps" id="t5-flow-steps"></div>
+        <div class="arch-detail" id="t5-flow-detail">Click a step above ↑</div>
+      </section>
+
+      <section class="sec" id="t5-inference">
+        <span class="flow-tag">HOW</span>
+        <h2><span class="section-icon">🔁</span> Autoregressive inference</h2>
+        <p><strong>Training is parallel</strong> — the whole decoder computes all positions of "हम दोस्त हैं" at once, using masking so no position cheats by seeing the future. <strong>Inference is sequential</strong> — the decoder doesn't have the target sentence yet, so it generates one token at a time, feeding each new token back in as input for the next step. The encoder itself only runs once; every decoding step re-uses its output via cross-attention.</p>
+        <div class="stepper">
+          <button class="btn ghost" onclick="inferStep(-1)">← Back</button>
+          <div class="step-dots" id="t5-infer-dots"></div>
+          <button class="btn" onclick="inferStep(1)">Next →</button>
+          <span class="step-label" id="t5-infer-label"></span>
+        </div>
+        <div class="trace-panel" id="t5-infer-panel"></div>
+      </section>
+
+      <section class="sec" id="t5-simulate">
+        <h2><span class="section-icon">🧪</span> Trace YOUR sentence <span class="real-badge">REAL MATH</span><span class="toy-badge">TOY DATA</span></h2>
+        <div class="dd-toggle" onclick="toggleDeepDive('t5-simulate')"><span>🔬 Deep Dive: Trace YOUR sentence, step by step</span><span id="ddchev-t5-simulate">▸ Show</span></div>
+        <div class="dd-body dd-collapsed" id="ddbody-t5-simulate">
+<p>Type any short sentence (a few words) and step through the <strong>encoder</strong> path with real computations at every stage — tokenize, embed, add positional encoding, self-attend, add &amp; norm, and run a toy feed-forward layer.</p>
+        <div class="callout">
+          <div class="callout-label">Scope</div>
+          This traces the <strong>encoder side only</strong>. Tracing the decoder would need a paired target sentence (like the हम दोस्त हैं example above) — since you haven't given one, there's nothing for cross-attention to attend to.
+        </div>
+        <div class="panel">
+          <label class="field-label">Your sentence</label>
+          <input type="text" id="t5-sentence" value="We are friend" oninput="t6SetupSim()">
+          <p style="margin:10px 0 0;font-size:12px;color:var(--ink-faint);">Embeddings are a small, deterministic "hash" of each word (a toy stand-in for a trained embedding table — same word always gives the same vector, but it hasn't learned anything). The feed-forward layer uses small fixed toy weights, not trained ones.</p>
+          <div class="stepper" style="margin-top:14px;">
+            <button class="btn ghost" onclick="t6SimStep(-1)">← Back</button>
+            <div class="step-dots" id="t5-sim-dots"></div>
+            <button class="btn" onclick="t6SimStep(1)">Next →</button>
+            <span class="step-label" id="t5-sim-label"></span>
+          </div>
+          <div class="nums-wrap" id="numswrap-sim">
+          <button class="btn ghost numtoggle-btn" onclick="toggleNumbers('numswrap-sim', this)">Hide numbers</button>
+          <div class="trace-panel nums-content" id="t5-sim-panel"></div>
+          <p class="nums-fallback">Numbers hidden — click "Show numbers" above to see the exact values.</p>
+        </div>
+          <div class="callout">
+            <div class="callout-label">💡 What should I notice?</div>
+            Notice the same word always produces the same starting embedding (the hash is deterministic), but its vector still changes after self-attention — that's context doing its job, even on toy numbers.
+          </div>
+        </div>
+        </div>
+      </section>
+
+      <section class="sec" id="t5-fulltrace">
+        <span class="flow-tag">TRY IT</span>
+        <h2><span class="section-icon">🔗</span> Full encoder→decoder trace (your sentence) <span class="real-badge">REAL MATH</span><span class="toy-badge">TOY DATA</span></h2>
+        <p>Type one sentence and step through the <strong>entire</strong> pipeline in a single place — the full encoder block, then the decoder generating one token at a time — with real computations at every stage.</p>
+        <div class="callout">
+          <div class="callout-label">Honest scope</div>
+          Every computation here is real math on your actual words: embeddings, positional encoding, masked self-attention, cross-attention, add &amp; norm, feed-forward. The one simplification is the final "vocabulary" — since there's no trained model behind this page, the decoder's predicted word at each step is whichever <em>source</em> word its cross-attention weights point to most strongly. That's a real technique (a pointer / copy mechanism), just simpler than the full trained vocabulary a real Transformer's output layer projects onto. For a version with genuine cross-attention on real target-language words, see the "We are friend → हम दोस्त हैं" worked example earlier on this page.
+        </div>
+        <div class="panel">
+          <label class="field-label">Your sentence</label>
+          <input type="text" id="t5-full-sentence" value="We are friend" oninput="t6FullSetup()">
+          <p style="margin:10px 0 0;font-size:12px;color:var(--ink-faint);">Capped at 8 words to keep the trace readable. Decoding stops after as many steps as there are source words, since there's no trained end-of-sequence signal here.</p>
+          <div class="stepper" style="margin-top:14px;">
+            <button class="btn ghost" onclick="t6FullStep(-1)">← Back</button>
+            <div class="step-dots" id="t5-full-dots"></div>
+            <button class="btn" onclick="t6FullStep(1)">Next →</button>
+            <span class="step-label" id="t5-full-label"></span>
+          </div>
+          <div class="nums-wrap" id="numswrap-full">
+          <button class="btn ghost numtoggle-btn" onclick="toggleNumbers('numswrap-full', this)">Hide numbers</button>
+          <div class="trace-panel nums-content" id="t5-full-panel"></div>
+          <p class="nums-fallback">Numbers hidden — click "Show numbers" above to see the exact values.</p>
+        </div>
+          <div class="callout">
+            <div class="callout-label">💡 What should I notice?</div>
+            Notice the cross-attention weights on each decoder step tend to concentrate on the source word that actually corresponds to the token being generated — that's the alignment cross-attention is learning to find.
+          </div>
+        </div>
+      </section>
+
+      <section class="sec" id="t5-quiz">
+        <div class="quiz-head"><h2 style="margin:0;"><span class="section-icon">📝</span> Quick check</h2><button class="btn ghost" onclick="renderQuiz('t5')">Reset quiz</button></div>
+        <div id="t5-quiz-body"></div>
+      </section>
+
+      <section class="sec" id="t5-mastery">
+        <h2><span class="section-icon">🏆</span> Master this topic</h2>
+        <div id="mastery-t5"></div>
+      </section>
+
+      <div id="topicnav-topic5"></div>
+
+      <div id="footer-topic5"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ================= TOPIC 4 ================= -->
+<div class="view topic-page" id="topic6" data-accent="amber">
+  <div class="topbar">
+    <button class="back-btn" onclick="openTopic('landing')">← All topics</button>
+    <div class="badge" style="background:var(--ac)">6</div>
+    <div class="topbar-title">BERT vs. GPT — Two Pretraining Philosophies</div>
+    <span class="topbar-progress" id="topbar-progress-topic6"></span>
+    <button class="btn ghost topbar-glossary-btn" onclick="openGlossary()">📖 Glossary</button>
+  </div>
+  <div class="topic-body">
+    <nav class="sidebar" id="sidebar-topic6"></nav>
+    <div class="content">
+      <h1 class="page-title">BERT vs. GPT — Two Pretraining Philosophies</h1>
+      <div class="mobile-nav" id="mobilenav-topic6"></div>
+      <p class="page-sub">Same architecture family, two different ways of learning from raw text.</p>
+      <section class="sec" id="t6-revision">
+        <div class="revision-panel">
+          <div class="rp-label">⚡ 5-Minute Revision</div>
+          <ul>
+          <li><strong>BERT</strong> = encoder-only, pretrained with <strong>Masked Language Modeling (MLM)</strong> — predict a hidden token from context on <em>both</em> sides (bidirectional).</li>
+          <li><strong>GPT</strong> = decoder-only, pretrained with <strong>autoregressive next-token prediction</strong> — predict the next token from everything before it (left-to-right).</li>
+          <li>BERT tends toward understanding/classification tasks; GPT tends toward generation tasks (chat, summarization, translation).</li>
+          <li>Same underlying Transformer block machinery (attention, add&amp;norm, FFN) — the difference is which stack is kept and what the pretraining objective is.</li>
+          </ul>
+        </div>
+      </section>
+
+
+      <section class="sec" id="t6-concept">
+        <span class="flow-tag">WHY</span>
+        <h2><span class="section-icon">💡</span> Concept</h2>
+        <p><strong>BERT</strong> (Google, 2018) uses only the encoder and is pretrained with <strong>Masked Language Modeling (MLM)</strong>: hide a random word in a sentence, and train the model to predict it using context from <em>both</em> directions. <strong>GPT</strong> (OpenAI) uses only the decoder and is pretrained with <strong>autoregressive next‑token prediction</strong>: given everything so far, predict the next token — the same trick used at inference time to generate text.</p>
+      </section>
+
+      <section class="sec" id="t6-example">
+        <span class="flow-tag">WHAT</span>
+        <h2><span class="section-icon">📖</span> Worked examples (from the notes)</h2>
+        <div class="row">
+          <div class="panel"><strong>BERT-style (MLM)</strong><br><span class="mono" style="font-size:13.5px;">Sonny is <span style="background:var(--ac-soft);padding:1px 4px;border-radius:4px;">[MASK]</span> mentor.</span><br><span style="color:var(--ink-dim);font-size:13px;">→ predict the missing word ("my") using words on both sides.</span></div>
+          <div class="panel"><strong>GPT-style (next token)</strong><br><span class="mono" style="font-size:13.5px;">My name is → <span style="background:var(--ac-soft);padding:1px 4px;border-radius:4px;">Sunny</span></span><br><span style="color:var(--ink-dim);font-size:13px;">→ predict only the next word, from what came before.</span></div>
+        </div>
+      </section>
+
+      <section class="sec" id="t6-handson">
+        <span class="flow-tag">TRY IT</span>
+        <h2><span class="section-icon">🧪</span> Try it yourself — mask it vs. generate it <span class="toy-badge">TOY / ILLUSTRATIVE</span></h2>
+        <p>Type a short sentence and try both pretraining "games" on your own words. (This replays your own text to demonstrate the mechanics — it isn't a trained model making predictions.)</p>
+        <div class="panel">
+          <label class="field-label">Your sentence</label>
+          <input type="text" id="t6-sentence" value="Sonny is my mentor" oninput="resetMLM(); resetGPT();">
+          <div class="row" style="margin-top:14px;">
+            <div>
+              <label class="field-label">BERT-style: click a word to mask it</label>
+              <div id="t6-mlm-chips"></div>
+              <div id="t6-mlm-result" style="margin-top:8px;font-size:13.5px;color:var(--ink-dim);"></div>
+            </div>
+            <div>
+              <label class="field-label">GPT-style: reveal one token at a time</label>
+              <div id="t6-gpt-so-far" class="mono" style="min-height:28px;font-size:14px;"></div>
+              <button class="btn" style="margin-top:8px;" onclick="gptStep()">Reveal next token →</button>
+              <button class="btn ghost" style="margin-top:8px;" onclick="resetGPT()">Reset</button>
+            </div>
+          </div>
+          <div class="callout">
+            <div class="callout-label">💡 What should I notice?</div>
+            Notice BERT-style masking uses words on both sides to guess the hidden one, while GPT-style generation only ever sees what came before — that one difference is the whole bidirectional-vs-left-to-right distinction.
+          </div>
+        </div>
+      </section>
+
+      <section class="sec" id="t6-reference">
+        <h2><span class="section-icon">📋</span> Reference</h2>
+        <table>
+          <tr><th></th><th>BERT</th><th>GPT</th></tr>
+          <tr><td>Built by</td><td>Google</td><td>OpenAI</td></tr>
+          <tr><td>Uses</td><td>Encoder only</td><td>Decoder only</td></tr>
+          <tr><td>Pretraining task</td><td>Masked Language Modeling</td><td>Autoregressive next-token prediction</td></tr>
+          <tr><td>Context</td><td>Bidirectional</td><td>Left-to-right</td></tr>
+          <tr><td>Typical use</td><td>Classification, understanding tasks</td><td>Text generation, chat, summarization, translation</td></tr>
+        </table>
+        <p style="margin-top:14px;">The notes group four core NLP tasks under this family of models: <strong>text classification, summarization, translation,</strong> and <strong>text generation</strong> — with today's frontier LLMs (GPT, Gemini, Mistral, DeepSeek, Qwen, the Claude family) mostly built decoder-first for that last one.</p>
+      </section>
+
+      <section class="sec" id="t6-quiz">
+        <div class="quiz-head"><h2 style="margin:0;"><span class="section-icon">📝</span> Quick check</h2><button class="btn ghost" onclick="renderQuiz('t6')">Reset quiz</button></div>
+        <div id="t6-quiz-body"></div>
+      </section>
+
+      <section class="sec" id="t6-mastery">
+        <h2><span class="section-icon">🏆</span> Master this topic</h2>
+        <div id="mastery-t6"></div>
+      </section>
+
+      <div id="topicnav-topic6"></div>
+
+      <div id="footer-topic6"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ================= DATA ================= */
+const TOPICS = [
+  {id:'topic1', num:1, icon:'🧭', accent:'indigo', title:'Foundations', desc:'From plain neural nets to why Transformers had to happen.',
+    groups:[{label:'Revision', items:[['t1-revision','⚡','5-minute revision']]},
+            {label:'Concept', items:[['t1-concept','💡','The big picture'],['t1-map','🗺️','Full architecture at a glance']]},
+            {label:'Timeline', items:[['t1-timeline','🕰️','The road to Transformers']]},
+            {label:'Hands-on', items:[['t1-handson','🧪','Sequential vs. parallel']]},
+            {label:'Reference', items:[['t1-reference','📋','Comparison table'],['t1-reading','📚','Further reading'],['t1-quiz','📝','Quick check'],['t1-mastery','🏆','Master this topic']]}]},
+  {id:'topic2', num:2, icon:'🔗', accent:'coral', title:'Self-Attention', desc:'How the same word gets a different meaning in different sentences.',
+    groups:[{label:'Revision', items:[['t2-revision','⚡','5-minute revision']]},
+            {label:'Concept', items:[['t2-concept','💡','Concept'],['t2-example','📖','Worked example'],['t2-formula','🧮','The formula'],['t2-qkv','🗝️','Q, K, V explained']]},
+            {label:'Hands-on', items:[['t2-handson','🧪','Mini calculator']]},
+            {label:'Reference', items:[['t2-notes','⚖️','Why it matters'],['t2-quiz','📝','Quick check'],['t2-mastery','🏆','Master this topic']]}]},
+  {id:'topic3', num:3, icon:'⚙️', accent:'cyan', title:'Encoder & Decoder', desc:'The full Transformer architecture, step by step.',
+    groups:[{label:'Revision', items:[['t3-revision','⚡','5-minute revision']]},
+            {label:'Concept', items:[['t3-concept','💡','The two stacks'],['t3-pipeline','🔤','Data → output pipeline']]},
+            {label:'Hands-on', items:[['t3-order','🔀','Why order matters'],['t3-pe','📐','Positional encoding, computed'],['t3-encoder','⚙️','Encoder steps'],['t3-decoder','⚙️','Decoder steps'],['t3-addnorm','➕','Add & Norm'],['t3-ffn','🧠','Why a feed-forward layer?']]},
+            {label:'Reference', items:[['t3-stacking','🧱','Why stack N blocks? (deep dive)'],['t3-evolution','🔧','How it evolved (deep dive)'],['t3-recap','🎯','Interview recap'],['t3-quiz','📝','Quick check'],['t3-mastery','🏆','Master this topic']]}]},
+  {id:'topic4', num:4, icon:'🎛️', accent:'green', title:'Multi-Head, Cross & Masked Attention', desc:'Many viewpoints at once, attending across sequences, and hiding the future.',
+    groups:[{label:'Revision', items:[['t4-revision','⚡','5-minute revision']]},
+            {label:'Concept', items:[['t4-concept','💡','Why one head isn\'t enough'],['t4-mechanics','🧩','Concat + output projection (deep dive)']]},
+            {label:'Hands-on', items:[['t4-handson','🧪','Two-head calculator'],['t4-masked','🚫','Masking calculator']]},
+            {label:'Reference', items:[['t4-cross','🔀','Cross-attention'],['t4-quiz','📝','Quick check'],['t4-mastery','🏆','Master this topic']]}]},
+  {id:'topic5', num:5, icon:'🧵', accent:'violet', title:'Complete Flow: Trace a Sentence', desc:'The whole encoder→decoder pipeline, plus a step-by-step simulator for your own sentence.',
+    groups:[{label:'Revision', items:[['t5-revision','⚡','5-minute revision']]},
+            {label:'Worked example', items:[['t5-concept','💡','The running example'],['t5-fullflow','🗺️','Full encoder→decoder walkthrough'],['t5-inference','🔁','Autoregressive inference']]},
+            {label:'Hands-on', items:[['t5-fulltrace','🔗','Full encoder→decoder trace'],['t5-simulate','🧪','Trace YOUR sentence, step by step (deep dive)']]},
+            {label:'Reference', items:[['t5-quiz','📝','Quick check'],['t5-mastery','🏆','Master this topic']]}]},
+  {id:'topic6', num:6, icon:'🎭', accent:'amber', title:'BERT vs. GPT', desc:'Two pretraining philosophies built on the same architecture.',
+    groups:[{label:'Revision', items:[['t6-revision','⚡','5-minute revision']]},
+            {label:'Concept', items:[['t6-concept','💡','Concept'],['t6-example','📖','Worked examples']]},
+            {label:'Hands-on', items:[['t6-handson','🧪','Mask it / generate it']]},
+            {label:'Reference', items:[['t6-reference','📋','Reference'],['t6-quiz','📝','Quick check'],['t6-mastery','🏆','Master this topic']]}]},
+];
+
+const ACCENTS = {
+  indigo:{ac:'#5B4FA8', soft:'rgba(91,79,168,.12)', border:'rgba(91,79,168,.35)'},
+  coral: {ac:'#B23A2E', soft:'rgba(178,58,46,.12)', border:'rgba(178,58,46,.35)'},
+  cyan:  {ac:'#0E7C86', soft:'rgba(14,124,134,.12)', border:'rgba(14,124,134,.35)'},
+  amber: {ac:'#A5680B', soft:'rgba(165,104,11,.12)', border:'rgba(165,104,11,.35)'},
+  green: {ac:'#3B7A45', soft:'rgba(59,122,69,.12)', border:'rgba(59,122,69,.35)'},
+  violet:{ac:'#6D4FC2', soft:'rgba(109,79,194,.12)', border:'rgba(109,79,194,.35)'},
+};
+
+const FOOTER = {
+  name: 'Vikas Verma',
+  linkedin: 'https://www.linkedin.com/in/vikas-verma-tpm/',
+  github: 'https://github.com/vikasverma-AI-TPM'
+};
+function renderFooter(slotId){
+  const el = document.getElementById(slotId);
+  if(!el) return;
+  const initials = FOOTER.name.split(' ').filter(Boolean).map(w=>w[0]).slice(0,2).join('').toUpperCase();
+  el.innerHTML = `<footer class="pf"><div class="pf-avatar">${initials}</div><div><div class="pf-name">${FOOTER.name}</div><div class="pf-links"><a href="${FOOTER.linkedin}" target="_blank" rel="noopener">LinkedIn</a><a href="${FOOTER.github}" target="_blank" rel="noopener">GitHub</a></div></div></footer>`;
+}
+
+/* ================= PROGRESS TRACKING (localStorage, falls back to in-memory) ================= */
+const PROGRESS_KEY = 'tg_progress_v1';
+function loadProgress(){
+  try{
+    const raw = localStorage.getItem(PROGRESS_KEY);
+    if(!raw) return {visited:[], mastered:[]};
+    const parsed = JSON.parse(raw);
+    return {
+      visited: Array.isArray(parsed.visited) ? parsed.visited : [],
+      mastered: Array.isArray(parsed.mastered) ? parsed.mastered : [],
+    };
+  }catch(e){ return {visited:[], mastered:[]}; }
+}
+let progressData = loadProgress();
+function saveProgress(){
+  try{ localStorage.setItem(PROGRESS_KEY, JSON.stringify(progressData)); }catch(e){ /* storage blocked — stay in-memory only */ }
+}
+function markVisited(id){
+  if(!progressData.visited.includes(id)){
+    progressData.visited.push(id);
+    saveProgress();
+  }
+  renderProgressAll();
+}
+function markMastered(topicId){
+  if(!progressData.mastered.includes(topicId)){
+    progressData.mastered.push(topicId);
+    saveProgress();
+  }
+}
+function renderProgressAll(){
+  const total = TOPICS.length;
+  const count = progressData.visited.length;
+  const dotsHtml = TOPICS.map(t=>`<div class="progress-dot ${progressData.visited.includes(t.id)?'visited':''}"></div>`).join('');
+  const landingEl = document.getElementById('progress-landing');
+  if(landingEl){ landingEl.innerHTML = `<div class="progress-dots">${dotsHtml}</div><span class="progress-text">${count} of ${total} topics visited</span>`; }
+  TOPICS.forEach(t=>{
+    const el = document.getElementById('topbar-progress-'+t.id);
+    if(el) el.textContent = `${count}/${total}`;
+  });
+  document.querySelectorAll('.topic-card').forEach(card=>{
+    const id = card.getAttribute('data-topic-id');
+    const badge = card.querySelector('.card-visited-badge');
+    if(badge) badge.style.display = progressData.visited.includes(id) ? 'inline' : 'none';
+  });
+}
+
+/* ================= READING TIME ESTIMATE ================= */
+function computeReadingTimes(){
+  TOPICS.forEach(t=>{
+    const contentEl = document.querySelector('#'+t.id+' .content');
+    if(!contentEl){ t.readMin = 6; return; }
+    const words = contentEl.textContent.trim().split(/\s+/).filter(Boolean).length;
+    t.readMin = Math.max(3, Math.round(words/200));
+  });
+}
+
+/* ================= GLOSSARY ================= */
+const GLOSSARY = [
+  ['Q / K / V', 'Query, Key and Value — the three projections of an input used to compute attention weights (Q·K decides how much to attend; V is what gets blended in).'],
+  ['d_k', 'The dimension of the Key (and Query) vectors — used to scale QKᵀ before softmax so scores don’t grow too large.'],
+  ['softmax', 'A function that turns a row of raw scores into positive weights that sum to 1.'],
+  ['LayerNorm', 'Layer Normalization — standardizes a vector’s own features (mean 0, unit-ish variance), then rescales/shifts the result with learnable γ and β.'],
+  ['residual connection', 'Adding a layer’s input back to its output (x + f(x)) so deep stacks train more stably — also called a skip connection.'],
+  ['FFN', 'Feed-Forward Network — a small per-token neural net (two linear layers with a non-linearity) applied identically, and independently, to every position.'],
+  ['multi-head attention', 'Running several independent attention "heads" in parallel, each with its own learned Q/K/V projections, then concatenating their outputs and projecting back down.'],
+  ['cross-attention', 'Attention where the Query comes from one sequence (the decoder) and the Key/Value come from another (the encoder).'],
+  ['masked self-attention', 'Self-attention where a mask blocks each position from attending to positions after it, preserving left-to-right generation order.'],
+  ['MLM', 'Masked Language Modeling — BERT’s pretraining task: hide a token and predict it using context from both directions.'],
+  ['autoregressive', 'Generating one token at a time, each conditioned on everything generated so far — GPT’s pretraining and inference pattern.'],
+  ['logits', 'The raw, unnormalized scores a model outputs right before softmax turns them into probabilities.'],
+  ['KV cache', 'Storing previously computed Key/Value vectors during autoregressive generation so they don’t have to be recomputed at every new step.'],
+  ['RoPE', 'Rotary Positional Embedding — a way of injecting position information used by modern decoder-only LLMs instead of fixed sinusoidal PE.'],
+  ['RMSNorm', 'A simplified, faster alternative to LayerNorm used in many modern LLMs (e.g. Llama) that skips re-centering by the mean.'],
+  ['positional encoding', 'A signal (e.g. sine/cosine waves) added to each token embedding so the model can recover sequence order despite processing tokens in parallel.'],
+  ['encoder', 'The Transformer stack that reads an input sequence and produces a contextual representation of it, attending bidirectionally.'],
+  ['decoder', 'The Transformer stack that generates an output sequence one token at a time, using masked self-attention and (in the original architecture) cross-attention.'],
+  ['contextual representation', 'A word’s vector after self-attention — a weighted blend of every word in its sentence, so the same word can land differently in vector space depending on context.'],
+];
+function openGlossary(){
+  const modal = document.getElementById('glossary-modal');
+  const body = document.getElementById('glossary-body');
+  if(body && !body.dataset.built){
+    body.innerHTML = GLOSSARY.map(([term,def])=>`<div class="glossary-item"><div class="term">${term}</div><div class="def">${def}</div></div>`).join('');
+    body.dataset.built = '1';
+  }
+  if(modal) modal.classList.add('open');
+}
+function closeGlossary(){
+  const modal = document.getElementById('glossary-modal');
+  if(modal) modal.classList.remove('open');
+}
+
+/* ================= DEEP DIVE TOGGLE ================= */
+function toggleDeepDive(id){
+  const body = document.getElementById('ddbody-'+id);
+  const chev = document.getElementById('ddchev-'+id);
+  if(!body) return;
+  const collapsed = body.classList.toggle('dd-collapsed');
+  if(chev) chev.textContent = collapsed ? '▸ Show' : '▾ Hide';
+}
+
+/* ================= SHOW/HIDE NUMBERS TOGGLE ================= */
+function toggleNumbers(wrapId, btn){
+  const w = document.getElementById(wrapId);
+  if(!w) return;
+  const hidden = w.classList.toggle('hide-nums');
+  if(btn) btn.textContent = hidden ? 'Show numbers' : 'Hide numbers';
+}
+
+/* ================= NAV / SCAFFOLDING ================= */
+function buildLanding(){
+  const grid = document.getElementById('landing-grid');
+  grid.innerHTML = TOPICS.map(t=>{
+    const a = ACCENTS[t.accent];
+    return `<button class="topic-card" data-topic-id="${t.id}" onclick="openTopic('${t.id}')">
+      <span class="card-visited-badge" style="display:none;">✅</span>
+      <div class="card-icon" style="background:${a.soft};color:${a.ac};">${t.icon}</div>
+      <h3>${t.num}. ${t.title}</h3>
+      <p>${t.desc}</p>
+      <div class="open-link" style="color:${a.ac};">open guide → <span class="read-time">${t.readMin ? '~'+t.readMin+' min' : ''}</span></div>
+    </button>`;
+  }).join('');
+  renderProgressAll();
+}
+
+function buildMobileNav(topicId){
+  const t = TOPICS.find(x=>x.id===topicId);
+  const el = document.getElementById('mobilenav-'+topicId);
+  if(!t || !el) return;
+  const opts = [];
+  t.groups.forEach(g=>{ g.items.forEach(([id,icon,label])=>{ opts.push(`<option value="${id}">${icon} ${label}</option>`); }); });
+  el.innerHTML = `<select onchange="if(this.value) jumpTo(this.value);"><option value="">Jump to section…</option>${opts.join('')}</select>`;
+}
+
+function buildTopicNav(topicId){
+  const el = document.getElementById('topicnav-'+topicId);
+  if(!el) return;
+  const idx = TOPICS.findIndex(t=>t.id===topicId);
+  const prev = idx>0 ? TOPICS[idx-1] : null;
+  const next = idx<TOPICS.length-1 ? TOPICS[idx+1] : null;
+  const prevHtml = prev ? `<button class="btn ghost" onclick="openTopic('${prev.id}')">← Previous: ${prev.title}</button>` : `<span></span>`;
+  const nextHtml = next ? `<button class="btn" onclick="openTopic('${next.id}')">Next: ${next.title} →</button>` : `<button class="btn" onclick="openTopic('landing')">🎉 You've completed all topics — back to overview</button>`;
+  el.innerHTML = `<div class="topicnav">${prevHtml}${nextHtml}</div>`;
+}
+
+function buildTopicChrome(){
+  TOPICS.forEach(t=>{
+    const a = ACCENTS[t.accent];
+    const root = document.getElementById(t.id);
+    root.style.setProperty('--ac', a.ac);
+    root.style.setProperty('--ac-soft', a.soft);
+    root.style.setProperty('--ac-border', a.border);
+
+    // sidebar
+    const sb = document.getElementById('sidebar-'+t.id);
+    sb.innerHTML = t.groups.map(g=>`
+      <div class="sb-group">
+        <div class="sb-label">${g.label}</div>
+        ${g.items.map(([id,icon,label])=>`<a href="javascript:void(0)" class="sb-link" data-target="${id}" onclick="jumpTo('${id}')">${icon} ${label}</a>`).join('')}
+      </div>`).join('');
+
+    buildMobileNav(t.id);
+    buildTopicNav(t.id);
+    renderFooter('footer-'+t.id);
+  });
+}
+
+function openTopic(id){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo({top:0});
+  setTimeout(updateScrollSpy, 0);
+  if(id !== 'landing'){ markVisited(id); } else { renderProgressAll(); }
+}
+
+function jumpTo(id){
+  const el = document.getElementById(id);
+  if(el) el.scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+let spyTicking = false;
+function updateScrollSpy(){
+  const activeView = document.querySelector('.view.active');
+  if(!activeView || !activeView.classList.contains('topic-page')) return;
+  const sections = activeView.querySelectorAll('section.sec');
+  const topbarH = 70;
+  let current = null;
+  sections.forEach(s=>{
+    const r = s.getBoundingClientRect();
+    if(r.top <= topbarH + 10) current = s.id;
+  });
+  if(!current && sections.length) current = sections[0].id;
+  activeView.querySelectorAll('.sb-link').forEach(l=>{
+    l.classList.toggle('active', l.dataset.target === current);
+  });
+}
+window.addEventListener('scroll', ()=>{
+  if(!spyTicking){
+    requestAnimationFrame(()=>{ updateScrollSpy(); spyTicking = false; });
+    spyTicking = true;
+  }
+}, {passive:true, capture:true});
+
+/* ================= TOPIC 1: timeline + seq demo ================= */
+const T1_TIMELINE = [
+  ['NN','Neural Networks','The starting point — feedforward nets that learn patterns but have no sense of word order or sequence.'],
+  ['W2V','Word2Vec','A neural network\'s intermediate output turned into reusable word vectors. Big leap in meaning-capture — but each word gets one fixed vector, forever (static embedding).'],
+  ['RNN','RNN → LSTM / GRU (2014–15)','"Long-short term memory" — networks that read text as a sequence, carrying a hidden state forward. Finally sequence-aware, but sequential (slow) and weak on long-range context.'],
+  ['E-D','Encoder–Decoder (2015)','Built for machine translation: an encoder reads the whole input, a decoder generates the output from that single summary.'],
+  ['E-D+A','Encoder–Decoder + Attention (2016)','The decoder can now "look back" at specific encoder states instead of one squeezed-down summary vector — a preview of the idea that becomes self-attention.'],
+  ['ULMFiT','ULMFiT (2017–18)','Introduces the pretrain-then-fine-tune recipe for NLP — scalable transfer learning that modern LLMs still follow.'],
+  ['TF','Transformer (2017–18)','"Attention Is All You Need" — drops recurrence entirely. Self-attention lets every word attend to every other word, fully in parallel.'],
+];
+function buildTimeline(){
+  const el = document.getElementById('t1-timeline-list');
+  el.innerHTML = T1_TIMELINE.map((item,i)=>`
+    <div class="tl-item" id="tl-item-${i}" onclick="toggleTl(${i})">
+      <div class="tl-dot">${item[0].length<=3?item[0]:i+1}</div>
+      <div class="tl-body">
+        <div class="tl-title">${item[1]}</div>
+        <div class="tl-detail">${item[2]}</div>
+      </div>
+    </div>`).join('');
+}
+function toggleTl(i){
+  const el = document.getElementById('tl-item-'+i);
+  const wasOpen = el.classList.contains('open');
+  document.querySelectorAll('#t1-timeline-list .tl-item').forEach(x=>x.classList.remove('open'));
+  if(!wasOpen) el.classList.add('open');
+}
+
+const SEQ_WORDS = ['The','cat','sat','on','the','mat'];
+function runSeqDemo(){
+  const rnnTrack = document.getElementById('rnn-track');
+  const tfTrack = document.getElementById('tf-track');
+  rnnTrack.innerHTML = SEQ_WORDS.map(w=>`<span class="proc-chip">${w}</span>`).join('');
+  tfTrack.innerHTML = SEQ_WORDS.map(w=>`<span class="proc-chip">${w}</span>`).join('');
+  const rnnChips = rnnTrack.querySelectorAll('.proc-chip');
+  const tfChips = tfTrack.querySelectorAll('.proc-chip');
+  document.getElementById('rnn-log').textContent = 'Running…';
+  document.getElementById('tf-log').textContent = 'Running…';
+
+  // transformer: all at once
+  setTimeout(()=>{
+    tfChips.forEach(c=>c.classList.add('lit'));
+    document.getElementById('tf-log').textContent = `Done — all ${SEQ_WORDS.length} tokens processed in 1 parallel step.`;
+  }, 350);
+
+  // rnn: one at a time
+  const stepMs = 550;
+  SEQ_WORDS.forEach((w,i)=>{
+    setTimeout(()=>{
+      rnnChips[i].classList.add('lit');
+      document.getElementById('rnn-log').textContent = `Step ${i+1}/${SEQ_WORDS.length} — hidden state updated after "${w}"`;
+      if(i === SEQ_WORDS.length-1){
+        setTimeout(()=>{ document.getElementById('rnn-log').textContent = `Done — ${SEQ_WORDS.length} sequential steps needed.`; }, 200);
+      }
+    }, 350 + i*stepMs);
+  });
+}
+
+/* ================= TOPIC 2: self-attention calculator ================= */
+const ATTN_SENTENCES = {
+  A: {words:['money','bank','grows'], vecs:[[1,0,1],[0.5,0.5,1],[1,0,0.5]]},
+  B: {words:['river','bank','flows'], vecs:[[0,1,0.5],[0.5,0.5,1],[0,1,1]]},
+};
+let attnState = {key:'A', focus:1};
+function dot(a,b){ return a.reduce((s,v,i)=>s+v*b[i],0); }
+function norm(a){ return Math.sqrt(dot(a,a)); }
+function softmax(arr){ const m=Math.max(...arr); const ex=arr.map(x=>Math.exp(x-m)); const s=ex.reduce((a,b)=>a+b,0); return ex.map(x=>x/s); }
+
+function selfAttention(vecs){
+  const d = vecs[0].length;
+  const scaled = vecs.map(qi => vecs.map(kj => dot(qi,kj)/Math.sqrt(d)));
+  const weights = scaled.map(row => softmax(row));
+  const outputs = weights.map(w => {
+    const out = new Array(d).fill(0);
+    w.forEach((wi,i)=>{ vecs[i].forEach((v,dim)=>{ out[dim]+=wi*v; }); });
+    return out;
+  });
+  return {weights, outputs};
+}
+
+function setAttnSentence(key){
+  attnState.key = key;
+  attnState.focus = 1; // default to the ambiguous shared word ("bank")
+  document.getElementById('attn-btn-A').className = key==='A' ? 'btn' : 'btn ghost';
+  document.getElementById('attn-btn-B').className = key==='B' ? 'btn' : 'btn ghost';
+  buildAttnFocusChips();
+  renderAttn();
+}
+function buildAttnFocusChips(){
+  const data = ATTN_SENTENCES[attnState.key];
+  document.getElementById('attn-focus-chips').innerHTML =
+    '<label class="field-label" style="margin-bottom:6px;">Inspect word:</label><div>' +
+    data.words.map((w,i)=>`<span class="chip clickable${i===attnState.focus?' masked':''}" onclick="setAttnFocus(${i})">${w}</span>`).join('') +
+    '</div>';
+}
+function setAttnFocus(i){
+  attnState.focus = i;
+  buildAttnFocusChips();
+  renderAttn();
+}
+function renderAttn(){
+  const data = ATTN_SENTENCES[attnState.key];
+  const {weights, outputs} = selfAttention(data.vecs);
+  const fi = attnState.focus;
+  const w = weights[fi];
+  const out = outputs[fi].map(v=>v.toFixed(2));
+  const html = `
+    <p style="margin-bottom:8px;">Sentence: <span class="mono">${data.words.join(' · ')}</span> — attention weights for <strong>"${data.words[fi]}"</strong> looking at each word:</p>
+    ${data.words.map((wd,i)=>`
+      <div class="bar-row">
+        <div class="bar-label">${wd}</div>
+        <div class="bar-track"><div class="bar-fill" style="width:${(w[i]*100).toFixed(1)}%"></div></div>
+        <div class="bar-val">${(w[i]*100).toFixed(1)}%</div>
+      </div>`).join('')}
+    <p style="margin-top:10px;">Resulting contextual vector for "${data.words[fi]}": <span class="mono">[${out.join(', ')}]</span></p>
+  `;
+  document.getElementById('attn-output').innerHTML = html;
+}
+
+/* ================= TOPIC 3: order-matters demo ================= */
+const ORDER_WORDS = ['Sunny','is','taking','GenAI','class','&','teaching','transformer'];
+function buildOrderChips(words){
+  document.getElementById('t3-order-chips').innerHTML = words.map(w=>`<span class="chip">${w}</span>`).join(' ');
+}
+function shuffleOrderDemo(){
+  const shuffled = [...ORDER_WORDS];
+  for(let i=shuffled.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [shuffled[i],shuffled[j]] = [shuffled[j],shuffled[i]];
+  }
+  buildOrderChips(shuffled);
+  document.getElementById('t3-order-note').textContent = 'Same bag of words, scrambled order — the meaning is now unclear or wrong, even though self-attention alone can\'t tell these two arrangements apart without positional encoding.';
+}
+function resetOrderDemo(){
+  buildOrderChips(ORDER_WORDS);
+  document.getElementById('t3-order-note').textContent = 'This is the original order — click "Shuffle" to scramble it.';
+}
+
+/* ================= TOPIC 3: positional encoding calculator ================= */
+function computePE(pos, dModel){
+  const vec = [];
+  for(let i=0; i*2 < dModel; i++){
+    const denom = Math.pow(10000, (2*i)/dModel);
+    vec.push(Math.sin(pos/denom));
+    if(vec.length < dModel) vec.push(Math.cos(pos/denom));
+  }
+  return vec.slice(0, dModel);
+}
+function renderPE(){
+  const posEl = document.getElementById('pe-pos');
+  const dimEl = document.getElementById('pe-dim');
+  const out = document.getElementById('pe-output');
+  const pos = parseInt(posEl.value, 10);
+  let dModel = parseInt(dimEl.value, 10);
+  if(isNaN(pos) || pos < 0 || isNaN(dModel) || dModel < 2){
+    out.innerHTML = `<p style="color:#B23A2E;">Enter a position ≥ 0 and an even dimension ≥ 2.</p>`;
+    return;
+  }
+  if(dModel % 2 !== 0){ dModel -= 1; }
+  const vec = computePE(pos, dModel).map(v=>v.toFixed(4));
+  out.innerHTML = `<p style="margin-bottom:6px;">PE(pos=${pos}, d_model=${dModel}) =</p>
+    <div class="panel mono" style="font-size:13.5px;word-break:break-all;">[${vec.join(', ')}]</div>
+    <p style="margin-top:8px;font-size:12.5px;color:var(--ink-faint);">Try pos=0 vs. pos=1 with d_model=6 — that's the exact worked example from the notes.</p>`;
+}
+
+/* ================= TOPIC 3: architecture diagram + steps ================= */
+const ENCODER_STEPS = [
+  ['prep','Input sequence','The raw tokens of the sentence, in order.'],
+  ['prep','Input embedding','Each token becomes a dense vector (conceptually like Word2Vec\'s output).'],
+  ['prep','Positional encoding','Since attention has no built-in order, a position signal is added to each embedding. This happens once, before the encoder block runs.'],
+  ['block','Self-attention (multi-head)','Each token looks at every other token via Q, K, V projections — multiple "heads" learn different relationships in parallel.'],
+  ['block','Add & Layer Normalization','The attention output is added back to its input (residual connection) and normalized for stable training.'],
+  ['block','Feed Forward Network (ANN)','A small per-token neural network adds further transformation on top of the attended representation.'],
+  ['block','Residual connection + Layer Norm','Another residual + normalization step around the feed-forward layer. This is the last step of one encoder block — everything from "Self-attention" to here is what repeats.'],
+];
+const DECODER_STEPS = [
+  ['prep','Output sequence (shifted right)','During training, the target sequence is fed in one position ahead, so each position predicts the next token.'],
+  ['prep','Output embedding (~512 dim)','Target tokens become dense vectors, same idea as the encoder\'s input embedding.'],
+  ['prep','Positional encoding','Position information is added, exactly as on the encoder side. This happens once, before the decoder block runs.'],
+  ['block','Masked multi-head attention','Self-attention over the output so far — but future positions are masked so a token can\'t "see" what comes next.'],
+  ['block','Add & Layer Normalization','Residual connection + normalization around the masked attention.'],
+  ['block','Cross-attention (encoder ↔ decoder)','The decoder\'s queries attend to the encoder\'s output — this is where the input sentence actually informs generation.'],
+  ['block','Add & Layer Normalization','Residual connection + normalization around cross-attention.'],
+  ['block','Feed Forward Network','Per-token transformation, same role as on the encoder side.'],
+  ['block','Add & Layer Normalization','Residual connection + normalization around the feed-forward layer. This is the last step of one decoder block — everything from "Masked multi-head attention" to here is what repeats.'],
+  ['output','Linear layer','Projects the decoder\'s output vector to the size of the vocabulary. This runs once, after every decoder block has run — it is not part of the repeated block.'],
+  ['output','Softmax','Turns those scores into a probability distribution over every possible next token.'],
+  ['output','Final output (probabilities)','The token with the highest probability (or a sampling strategy) is chosen as the next output token.'],
+];
+const ARCH_GROUP_LABEL = {
+  prep: {enc:'Input preparation — runs once', dec:'Output preparation — runs once'},
+  block: {enc:'Encoder block — repeated × N', dec:'Decoder block — repeated × N'},
+  output: {enc:'', dec:'Output head — runs once, after every decoder block'},
+};
+
+function buildArchSteps(containerId, detailId, steps, sideClass){
+  const el = document.getElementById(containerId);
+  const side = containerId.includes('encoder') ? 'enc' : 'dec';
+  let html = '';
+  let lastGroup = null;
+  steps.forEach((s,i)=>{
+    const [group, title, detail] = s;
+    if(group !== lastGroup){
+      html += `<div class="arch-group-label">${ARCH_GROUP_LABEL[group][side]}</div>`;
+      lastGroup = group;
+    }
+    html += `<div class="arch-step" id="${containerId}-${i}" onclick="showArchStep('${containerId}','${detailId}',${i})">
+      <div class="n">${i+1}</div><div>${title}</div>
+    </div>`;
+  });
+  el.innerHTML = html;
+}
+function showArchStep(containerId, detailId, i){
+  const steps = containerId.includes('encoder') ? ENCODER_STEPS : DECODER_STEPS;
+  document.querySelectorAll('#'+containerId+' .arch-step').forEach(s=>s.classList.remove('active'));
+  document.getElementById(containerId+'-'+i).classList.add('active');
+  document.getElementById(detailId).innerHTML = `<strong>${i+1}. ${steps[i][1]}</strong><br>${steps[i][2]}`;
+  highlightDiagram(containerId.includes('encoder') ? 'enc' : 'dec');
+}
+function highlightDiagram(side){
+  const svg = document.getElementById('t3-svg');
+  if(!svg) return;
+  svg.querySelectorAll('.stack-enc, .stack-dec').forEach(g=>g.style.opacity = 0.35);
+  svg.querySelectorAll('.stack-'+side).forEach(g=>g.style.opacity = 1);
+}
+
+function buildArchDiagram(containerId, svgId, arrowId){
+  containerId = containerId || 't3-diagram';
+  svgId = svgId || 't3-svg';
+  arrowId = arrowId || 'arrow';
+  const wrap = document.getElementById(containerId);
+  if(!wrap) return;
+  wrap.innerHTML = `
+  <svg id="${svgId}" viewBox="0 0 640 260" width="100%" style="max-width:640px;">
+    <g class="stack-enc">
+      <text x="140" y="18" text-anchor="middle" font-size="13" font-weight="600" fill="var(--ink)">Encoder</text>
+      <rect x="22" y="24" width="236" height="88" rx="10" fill="none" stroke="var(--ac)" stroke-width="1.5" stroke-dasharray="4 3"/>
+      <rect x="30" y="30" width="220" height="34" rx="7" fill="var(--card)" stroke="var(--border)"/>
+      <text x="140" y="52" text-anchor="middle" font-size="12" fill="var(--ink)">Self-Attention</text>
+      <rect x="30" y="72" width="220" height="34" rx="7" fill="var(--card)" stroke="var(--border)"/>
+      <text x="140" y="94" text-anchor="middle" font-size="12" fill="var(--ink)">Feed Forward</text>
+      <rect x="168" y="102" width="88" height="18" rx="9" fill="var(--ac)"/>
+      <text x="212" y="114.5" text-anchor="middle" font-size="9.5" font-weight="600" fill="#fff">× N blocks</text>
+      <rect x="30" y="128" width="220" height="30" rx="7" fill="var(--surface)" stroke="var(--border)"/>
+      <text x="140" y="148" text-anchor="middle" font-size="11" fill="var(--ink-dim)">Input Embedding + Positional Encoding</text>
+    </g>
+    <g class="stack-dec">
+      <text x="500" y="0" text-anchor="middle" font-size="13" font-weight="600" fill="var(--ink)" dy="14">Decoder</text>
+      <rect x="390" y="10" width="220" height="30" rx="7" fill="var(--card)" stroke="var(--border)"/>
+      <text x="500" y="30" text-anchor="middle" font-size="11" fill="var(--ink)">Linear + Softmax</text>
+      <rect x="382" y="40" width="236" height="114" rx="10" fill="none" stroke="var(--ac)" stroke-width="1.5" stroke-dasharray="4 3"/>
+      <rect x="390" y="46" width="220" height="30" rx="7" fill="var(--card)" stroke="var(--border)"/>
+      <text x="500" y="66" text-anchor="middle" font-size="12" fill="var(--ink)">Cross-Attention</text>
+      <rect x="390" y="82" width="220" height="30" rx="7" fill="var(--card)" stroke="var(--border)"/>
+      <text x="500" y="102" text-anchor="middle" font-size="12" fill="var(--ink)">Feed Forward</text>
+      <rect x="390" y="118" width="220" height="30" rx="7" fill="var(--card)" stroke="var(--border)"/>
+      <text x="500" y="138" text-anchor="middle" font-size="12" fill="var(--ink)">Masked Self-Attention</text>
+      <rect x="528" y="144" width="88" height="18" rx="9" fill="var(--ac)"/>
+      <text x="572" y="156.5" text-anchor="middle" font-size="9.5" font-weight="600" fill="#fff">× N blocks</text>
+      <rect x="390" y="170" width="220" height="30" rx="7" fill="var(--surface)" stroke="var(--border)"/>
+      <text x="500" y="190" text-anchor="middle" font-size="11" fill="var(--ink-dim)">Output Embedding + Positional Encoding</text>
+    </g>
+    <path d="M250,60 C310,60 330,60 388,60" stroke="var(--ink-faint)" stroke-width="1.5" fill="none" marker-end="url(#${arrowId})"/>
+    <text x="300" y="52" text-anchor="middle" font-size="10" fill="var(--ink-faint)">encoder output</text>
+    <defs><marker id="${arrowId}" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 z" fill="var(--ink-faint)"/></marker></defs>
+  </svg>`;
+}
+
+/* ================= TOPIC 4: MLM + GPT demo ================= */
+function getSentenceWords(){
+  const raw = document.getElementById('t6-sentence').value.trim();
+  return raw.length ? raw.split(/\s+/) : ['Sonny','is','my','mentor'];
+}
+function buildMlmChips(){
+  const words = getSentenceWords();
+  document.getElementById('t6-mlm-chips').innerHTML = words.map((w,i)=>`<span class="chip clickable" onclick="maskWord(${i})">${w}</span>`).join('');
+  document.getElementById('t6-mlm-result').textContent = '';
+}
+function maskWord(i){
+  const words = getSentenceWords();
+  const el = document.getElementById('t6-mlm-chips');
+  el.innerHTML = words.map((w,idx)=>`<span class="chip ${idx===i?'masked':'clickable'}" ${idx===i?'':`onclick="maskWord(${idx})"`}>${idx===i?'[MASK]':w}</span>`).join('');
+  document.getElementById('t6-mlm-result').innerHTML = `BERT's job: predict <strong>"${words[i]}"</strong> using the words on both sides. <button class="btn ghost" style="padding:4px 10px;font-size:12px;" onclick="revealMask(${i})">Reveal</button>`;
+}
+function revealMask(i){
+  const words = getSentenceWords();
+  document.getElementById('t6-mlm-result').innerHTML = `Revealed: <strong>${words[i]}</strong> ✓ (this is the word you typed — a real BERT predicts it purely from context)`;
+}
+function resetMLM(){ buildMlmChips(); }
+
+let gptIndex = 0;
+function resetGPT(){
+  gptIndex = 0;
+  document.getElementById('t6-gpt-so-far').textContent = '(click generate to start)';
+}
+function gptStep(){
+  const words = getSentenceWords();
+  if(gptIndex >= words.length){ return; }
+  gptIndex++;
+  const so_far = words.slice(0, gptIndex).join(' ');
+  const remaining = words.length - gptIndex;
+  document.getElementById('t6-gpt-so-far').textContent = so_far + (remaining>0 ? ' …' : '');
+  if(remaining === 0){
+    document.getElementById('t6-gpt-so-far').textContent += `  (done — ${words.length}/${words.length} tokens)`;
+  }
+}
+
+/* ================= TOPIC 3: LayerNorm calculator ================= */
+function layerNorm(vec, gamma, beta, eps){
+  eps = (eps===undefined || eps===null) ? 1e-5 : eps;
+  const n = vec.length;
+  const mean = vec.reduce((a,b)=>a+b,0)/n;
+  const variance = vec.reduce((a,b)=>a+(b-mean)*(b-mean),0)/n;
+  const std = Math.sqrt(variance+eps);
+  const normalized = vec.map(x=>(x-mean)/std);
+  const g = (gamma && gamma.length===n) ? gamma : vec.map(()=>1);
+  const b = (beta && beta.length===n) ? beta : vec.map(()=>0);
+  const out = normalized.map((x,i)=>x*g[i]+b[i]);
+  return {mean, variance, std, normalized, out};
+}
+function parseVec(str){
+  return str.split(',').map(s=>s.trim()).filter(s=>s.length).map(Number);
+}
+function renderLN(){
+  const out = document.getElementById('ln-output');
+  const x = parseVec(document.getElementById('ln-x').value);
+  const gRaw = parseVec(document.getElementById('ln-g').value);
+  const bRaw = parseVec(document.getElementById('ln-b').value);
+  if(!x.length || x.some(isNaN)){
+    out.innerHTML = `<p style="color:#B23A2E;">Enter a valid comma-separated vector for x.</p>`;
+    return;
+  }
+  const gamma = gRaw.length===x.length && !gRaw.some(isNaN) ? gRaw : x.map(()=>1);
+  const beta = bRaw.length===x.length && !bRaw.some(isNaN) ? bRaw : x.map(()=>0);
+  const r = layerNorm(x, gamma, beta);
+  const f2 = v=>v.map(n=>n.toFixed(2)).join(', ');
+  out.innerHTML = `
+    <table>
+      <tr><th>μ (mean)</th><td class="mono">${r.mean.toFixed(4)}</td></tr>
+      <tr><th>σ² (variance)</th><td class="mono">${r.variance.toFixed(4)}</td></tr>
+      <tr><th>√(σ²+ε)</th><td class="mono">${r.std.toFixed(4)}</td></tr>
+      <tr><th>x_norm = (x−μ)/√(σ²+ε)</th><td class="mono">[${f2(r.normalized)}]</td></tr>
+      <tr><th>y = x_norm·γ + β</th><td class="mono">[${f2(r.out)}]</td></tr>
+    </table>`;
+}
+
+/* ================= Shared: deterministic toy "hash embedding" + FFN ================= */
+function hashSeed(str){ let h=2166136261; for(let i=0;i<str.length;i++){ h ^= str.charCodeAt(i); h = Math.imul(h,16777619); } return h>>>0; }
+function mulberry32(a){ return function(){ a |= 0; a = a+0x6D2B79F5 | 0; let t = Math.imul(a ^ a>>>15, 1 | a); t = t + Math.imul(t ^ t>>>7, 61 | t) ^ t; return ((t ^ t>>>14) >>> 0) / 4294967296; }; }
+function hashEmbed(word, dim){
+  const rng = mulberry32(hashSeed(word.toLowerCase()));
+  const v = [];
+  for(let i=0;i<dim;i++) v.push(+(rng()*2-1).toFixed(3));
+  return v;
+}
+function makeMatrix(rows, cols, seedStr){
+  const rng = mulberry32(hashSeed(seedStr));
+  const m = [];
+  for(let r=0;r<rows;r++){ const row=[]; for(let c=0;c<cols;c++) row.push(+(rng()*0.6-0.3).toFixed(3)); m.push(row); }
+  return m;
+}
+function makeVec(n, seedStr){
+  const rng = mulberry32(hashSeed(seedStr));
+  const v = [];
+  for(let i=0;i<n;i++) v.push(+(rng()*0.2-0.1).toFixed(3));
+  return v;
+}
+const T6_DIM = 4, T6_HID = 6;
+const T6_W1 = makeMatrix(T6_DIM, T6_HID, 'ffn-w1');
+const T6_B1 = makeVec(T6_HID, 'ffn-b1');
+const T6_W2 = makeMatrix(T6_HID, T6_DIM, 'ffn-w2');
+const T6_B2 = makeVec(T6_DIM, 'ffn-b2');
+function feedForward(x){
+  const h = new Array(T6_HID).fill(0);
+  for(let j=0;j<T6_HID;j++){ let s=T6_B1[j]; for(let i=0;i<T6_DIM;i++) s += x[i]*T6_W1[i][j]; h[j]=Math.max(0,s); }
+  const out = new Array(T6_DIM).fill(0);
+  for(let k=0;k<T6_DIM;k++){ let s=T6_B2[k]; for(let j=0;j<T6_HID;j++) s += h[j]*T6_W2[j][k]; out[k]=s; }
+  return out;
+}
+
+/* ================= TOPIC 5: two-head calculator ================= */
+const T5_SENTENCES = {
+  A: {words:['money','bank','grows'], vecs:[[1,0,1],[0.5,0.5,1],[1,0,0.5]]},
+  B: {words:['chicken','is','ready'], vecs:[[0.2,0.8,0.4],[0.5,0.5,0.5],[0.9,0.1,0.6]]},
+};
+let t5State = {key:'A'};
+function head2Transform(vecs){
+  // Toy simplification, clearly disclosed: head 2 = head 1 reversed per-vector, then shifted.
+  return vecs.map(v => v.slice().reverse().map(x => +(1 - x).toFixed(2)));
+}
+function setT5Sentence(key){
+  t5State.key = key;
+  document.getElementById('t4-btn-A').className = key==='A' ? 'btn' : 'btn ghost';
+  document.getElementById('t4-btn-B').className = key==='B' ? 'btn' : 'btn ghost';
+  renderT5();
+}
+function renderT5(){
+  const data = T5_SENTENCES[t5State.key];
+  const head1Vecs = data.vecs;
+  const head2Vecs = head2Transform(data.vecs);
+  const h1 = selfAttention(head1Vecs);
+  const h2 = selfAttention(head2Vecs);
+  const barsFor = (res, vecs) => data.words.map((w,fi)=>`
+    <p style="margin:10px 0 4px;"><strong>${w}</strong> attends to:</p>
+    ${data.words.map((wd,i)=>`
+      <div class="bar-row">
+        <div class="bar-label">${wd}</div>
+        <div class="bar-track"><div class="bar-fill" style="width:${(res.weights[fi][i]*100).toFixed(1)}%"></div></div>
+        <div class="bar-val">${(res.weights[fi][i]*100).toFixed(1)}%</div>
+      </div>`).join('')}
+    <p style="font-size:12.5px;color:var(--ink-dim);">output: <span class="mono">[${res.outputs[fi].map(v=>v.toFixed(2)).join(', ')}]</span></p>
+  `).join('');
+  const html = `
+    <p style="margin-bottom:10px;">Sentence: <span class="mono">${data.words.join(' · ')}</span></p>
+    <div class="two-col">
+      <div class="panel"><h4 style="margin:0 0 8px;">Head 1</h4>${barsFor(h1)}</div>
+      <div class="panel"><h4 style="margin:0 0 8px;">Head 2 (toy transform of head 1)</h4>${barsFor(h2)}</div>
+    </div>
+    <div class="panel" style="margin-top:14px;">
+      <h4 style="margin:0 0 8px;">Concatenated output per word (head 1 ⊕ head 2)</h4>
+      ${data.words.map((w,i)=>`<div class="vec-box"><div class="vec-tag">${w}</div><div class="vec-vals">[${h1.outputs[i].map(v=>v.toFixed(2)).join(', ')}, ${h2.outputs[i].map(v=>v.toFixed(2)).join(', ')}]</div></div>`).join('')}
+      <p style="margin-top:10px;font-size:12.5px;color:var(--ink-dim);">In a real model, this wider concatenated vector is now multiplied by a learned W<sub>O</sub> to project it back down to the model's working dimension — skipped here since W<sub>O</sub> isn't something this toy example has learned.</p>
+    </div>`;
+  document.getElementById('t4-output').innerHTML = html;
+}
+
+/* ================= TOPIC 5: masking calculator ================= */
+const T5_MASK_WORDS = ['The','cat','sat','down'];
+const T5_MASK_SCORES = [
+  [4,2,1,0],
+  [1,5,2,1],
+  [0,2,6,3],
+  [1,1,2,7],
+];
+let t5MaskOn = true;
+function setMaskMode(on){
+  t5MaskOn = on;
+  document.getElementById('t4-mask-on').className = on ? 'btn' : 'btn ghost';
+  document.getElementById('t4-mask-off').className = !on ? 'btn' : 'btn ghost';
+  renderMask();
+}
+function renderMask(){
+  const n = T5_MASK_WORDS.length;
+  const scoreRows = T5_MASK_SCORES.map((row,i)=> t5MaskOn ? row.map((v,j)=> j>i ? -Infinity : v) : row.slice());
+  const weightRows = scoreRows.map(row => softmax(row));
+  const cell = (v) => v === -Infinity ? '−∞' : v.toFixed(2);
+  const table = (rows, maskAware) => `
+    <div class="matrix-wrap"><table class="matrix-grid">
+      <tr><th></th>${T5_MASK_WORDS.map(w=>`<th>${w}</th>`).join('')}</tr>
+      ${rows.map((row,i)=>`<tr><th>${T5_MASK_WORDS[i]}</th>${row.map((v,j)=>`<td${maskAware && t5MaskOn && j>i?' class="masked-cell"':''}>${cell(v)}</td>`).join('')}</tr>`).join('')}
+    </table></div>`;
+  document.getElementById('t4-mask-output').innerHTML = `
+    <p style="margin-bottom:6px;">${t5MaskOn ? 'Scaled scores, with a causal mask (−∞ on future positions) added before softmax:' : 'Scaled scores, unmasked — every position can see every other position:'}</p>
+    ${table(scoreRows, true)}
+    <p style="margin:14px 0 6px;">Resulting softmax weights (each row sums to 1):</p>
+    ${table(weightRows, true)}
+    <p style="margin-top:10px;font-size:12.5px;color:var(--ink-dim);">${t5MaskOn ? 'Notice each row only has non-zero weight on itself and earlier words — "cat" (row 2) can\'t see "sat" or "down".' : 'Without masking, "cat" (row 2) can freely attend to "sat" and "down" — future tokens it should not be able to see yet during training.'}</p>`;
+}
+
+/* ================= TOPIC 6: full encoder→decoder flow ================= */
+const T6_FLOW_STEPS = [
+  ['enc-prep','Tokenize "We are friend"','Input sentence split into tokens: We, are, friend.'],
+  ['enc-prep','Embed each token (dim 512 in the paper)','Each token becomes a dense vector via the (trainable) embedding layer.'],
+  ['enc-prep','Add positional encoding','Sinusoidal PE is added to each embedding so the model knows token order. This happens once, before the encoder block runs.'],
+  ['enc-block','Self-attention (multi-head)','We / are / friend each attend to one another — no masking needed, the whole sentence is already known.'],
+  ['enc-block','Add & Layer Norm','Residual connection back to the input, then LayerNorm, exactly as in the worked example above.'],
+  ['enc-block','Feed-Forward Network (hidden dim 2048)','Per-token non-linear transform: 512 → 2048 → 512.'],
+  ['enc-block','Add & Layer Norm','Residual + LayerNorm again — the last step of one encoder block (repeated × N, N=6 in the paper). This is the encoder\'s final output — the K/V source for every decoder step.'],
+  ['dec-prep','Tokenize target so far: <SOS>, हम, दोस्त, हैं','During training, the whole shifted-right target is available at once (training is parallel).'],
+  ['dec-prep','Embed + positional encoding (decoder side)','Same idea as the encoder: dense vectors + positional signal, now for the Hindi tokens. This happens once, before the decoder block runs.'],
+  ['dec-block','Masked self-attention','हम / दोस्त / हैं attend to each other — but a causal mask blocks each token from seeing later tokens (see Topic 4\'s masking calculator).'],
+  ['dec-block','Add & Layer Norm','Residual + LayerNorm around the masked self-attention.'],
+  ['dec-block','Cross-attention (Q ← decoder, K/V ← encoder)','हम/दोस्त/हैं\'s Queries attend to the encoder\'s Key/Value output for we/are/friend — this is how the source sentence informs generation.'],
+  ['dec-block','Add & Layer Norm','Residual + LayerNorm around cross-attention.'],
+  ['dec-block','Feed-Forward Network (hidden dim 2048)','Per-token non-linear transform, same shape as the encoder\'s FFN.'],
+  ['dec-block','Add & Layer Norm','Final residual + LayerNorm — the last step of one decoder block (repeated × N, N=6 in the paper).'],
+  ['dec-output','Linear projection to vocabulary size','The 512-dim output of the last decoder block is projected to one score per vocabulary word. This runs once, after every decoder block has run — it is not part of the repeated block.'],
+  ['dec-output','Softmax','Vocabulary scores become a probability distribution, e.g. [SOS: 0, हम: 0.7, दोस्त: 0.2, हैं: 0.1].'],
+  ['dec-output','Loss (training only)','Compare the predicted distribution against the actual next token (cross-entropy in practice; the notes state it informally as "Actual − Predicted").'],
+];
+const T6_FLOW_GROUP_LABEL = {
+  'enc-prep': 'Encoder — input preparation (once)',
+  'enc-block': 'Encoder block — repeated × N',
+  'dec-prep': 'Decoder — output preparation (once)',
+  'dec-block': 'Decoder block — repeated × N',
+  'dec-output': 'Output head — runs once, after every decoder block',
+};
+function buildT6Flow(){
+  const el = document.getElementById('t5-flow-steps');
+  let html = '';
+  let lastGroup = null;
+  T6_FLOW_STEPS.forEach((s,i)=>{
+    const [group, title] = s;
+    if(group !== lastGroup){
+      html += `<div class="arch-group-label">${T6_FLOW_GROUP_LABEL[group]}</div>`;
+      lastGroup = group;
+    }
+    const side = group.startsWith('enc') ? 'encoder' : 'decoder';
+    html += `<div class="arch-step" id="t5-flow-${i}" onclick="showT6Flow(${i})">
+      <div class="n">${i+1}</div><div>${title} <span style="color:var(--ink-faint);font-size:11px;">(${side})</span></div>
+    </div>`;
+  });
+  el.innerHTML = html;
+}
+function showT6Flow(i){
+  document.querySelectorAll('#t5-flow-steps .arch-step').forEach(s=>s.classList.remove('active'));
+  document.getElementById('t5-flow-'+i).classList.add('active');
+  const s = T6_FLOW_STEPS[i];
+  const side = s[0].startsWith('enc') ? 'Encoder' : 'Decoder';
+  document.getElementById('t5-flow-detail').innerHTML = `<strong>${i+1}. [${side}] ${s[1]}</strong><br>${s[2]}`;
+}
+
+/* ================= TOPIC 6: autoregressive inference stepper ================= */
+const T6_INFER_STEPS = [
+  {t:1, input:['<SOS>'], predicted:'हम'},
+  {t:2, input:['<SOS>','हम'], predicted:'दोस्त'},
+  {t:3, input:['<SOS>','हम','दोस्त'], predicted:'हैं'},
+];
+let t6InferIdx = 0;
+function inferStep(delta){
+  t6InferIdx = Math.max(0, Math.min(T6_INFER_STEPS.length-1, t6InferIdx+delta));
+  renderInferStep();
+}
+function renderInferStep(){
+  const s = T6_INFER_STEPS[t6InferIdx];
+  document.getElementById('t5-infer-dots').innerHTML = T6_INFER_STEPS.map((_,i)=>`<div class="step-dot ${i<t6InferIdx?'done':''} ${i===t6InferIdx?'current':''}"></div>`).join('');
+  document.getElementById('t5-infer-label').textContent = `T = ${s.t} of ${T6_INFER_STEPS.length}`;
+  document.getElementById('t5-infer-panel').innerHTML = `
+    <h4>Step T=${s.t}</h4>
+    <p style="margin:0 0 10px;">Encoder output for "We are friend" is fixed and reused (computed once, before T=1).</p>
+    <div class="vec-box"><div class="vec-tag">decoder input so far</div><div class="vec-vals">${s.input.join(', ')}</div></div>
+    <div class="vec-box"><div class="vec-tag">→ decoder + cross-attention + linear + softmax →</div><div class="vec-vals">predicts: <strong>${s.predicted}</strong></div></div>
+    <p style="margin-top:10px;font-size:12.5px;color:var(--ink-dim);">${t6InferIdx < T6_INFER_STEPS.length-1 ? `At T=${s.t+1}, "${s.predicted}" gets appended to the decoder input and fed back in.` : 'All three target tokens have now been generated, one at a time.'}</p>`;
+}
+
+/* ================= TOPIC 6: trace-your-sentence simulator ================= */
+const T6_SIM_STAGE_NAMES = ['Tokenize','Embed (Toy Embedding Simulator)','+ Positional Encoding','Self-Attention','Add & Norm','Feed-Forward (toy)'];
+let t6Sim = {words:[], stage:0};
+function t6SetupSim(){
+  const raw = document.getElementById('t5-sentence').value.trim();
+  t6Sim.words = raw.length ? raw.split(/\s+/) : ['We','are','friend'];
+  t6Sim.stage = 0;
+  renderT6Sim();
+}
+function t6SimStep(delta){
+  t6Sim.stage = Math.max(0, Math.min(T6_SIM_STAGE_NAMES.length-1, t6Sim.stage+delta));
+  renderT6Sim();
+}
+function t6Compute(){
+  const words = t6Sim.words;
+  const dim = T6_DIM;
+  const embeds = words.map(w => hashEmbed(w, dim));
+  const pes = words.map((w,i) => computePE(i, dim));
+  const withPE = embeds.map((e,i) => e.map((v,d)=>+(v+pes[i][d]).toFixed(3)));
+  const attn = selfAttention(withPE);
+  const added = attn.outputs.map((z,i) => z.map((v,d)=>+(v+withPE[i][d]).toFixed(3)));
+  const normed = added.map(v => layerNorm(v).out.map(x=>+x.toFixed(3)));
+  const ffnOut = normed.map(v => feedForward(v).map(x=>+x.toFixed(3)));
+  return {embeds, pes, withPE, attn, added, normed, ffnOut};
+}
+function vecRow(label, vecs, words){
+  return `<div style="margin:8px 0;">${words.map((w,i)=>`<div class="vec-box"><div class="vec-tag">${w}</div><div class="vec-vals">[${vecs[i].join(', ')}]</div></div>`).join('')}</div>`;
+}
+function renderT6Sim(){
+  const words = t6Sim.words;
+  document.getElementById('t5-sim-dots').innerHTML = T6_SIM_STAGE_NAMES.map((_,i)=>`<div class="step-dot ${i<t6Sim.stage?'done':''} ${i===t6Sim.stage?'current':''}"></div>`).join('');
+  document.getElementById('t5-sim-label').textContent = `${t6Sim.stage+1} / ${T6_SIM_STAGE_NAMES.length}: ${T6_SIM_STAGE_NAMES[t6Sim.stage]}`;
+  const c = t6Compute();
+  const panel = document.getElementById('t5-sim-panel');
+  let body = '';
+  if(t6Sim.stage===0){
+    body = `<h4>Tokenize</h4><p>"${words.join(' ')}" → ${words.length} tokens:</p><div>${words.map(w=>`<span class="chip">${w}</span>`).join('')}</div>`;
+  } else if(t6Sim.stage===1){
+    body = `<h4>Embed (toy deterministic hash, dim=${T6_DIM})</h4><p style="font-size:12.5px;color:var(--ink-dim);">Same word always hashes to the same vector — a stand-in for a trained embedding lookup.</p>${vecRow('e',c.embeds,words)}`;
+  } else if(t6Sim.stage===2){
+    body = `<h4>+ Positional Encoding</h4><p style="font-size:12.5px;color:var(--ink-dim);">Real sinusoidal PE (same formula as Topic 3), added to each embedding.</p>${vecRow('PE',c.pes,words)}<p style="margin:10px 0 4px;">Embedding + PE:</p>${vecRow('x',c.withPE,words)}`;
+  } else if(t6Sim.stage===3){
+    body = `<h4>Self-Attention</h4><p style="font-size:12.5px;color:var(--ink-dim);">Real softmax(QKᵀ/√d)·V on the vectors from the previous step (toy: Q=K=V=x, no learned projections).</p>` +
+      words.map((w,i)=>`<p style="margin:10px 0 2px;"><strong>${w}</strong> weights: [${c.attn.weights[i].map(v=>v.toFixed(2)).join(', ')}]</p>`).join('') +
+      `<p style="margin:10px 0 4px;">Output (z):</p>${vecRow('z',c.attn.outputs.map(v=>v.map(x=>+x.toFixed(3))),words)}`;
+  } else if(t6Sim.stage===4){
+    body = `<h4>Add & Norm</h4><p style="font-size:12.5px;color:var(--ink-dim);">z + x (residual), then real LayerNorm (γ=1, β=0).</p><p style="margin:10px 0 4px;">z + x:</p>${vecRow('z+x',c.added,words)}<p style="margin:10px 0 4px;">LayerNorm(z+x):</p>${vecRow('norm',c.normed,words)}`;
+  } else {
+    body = `<h4>Feed-Forward (toy weights)</h4><p style="font-size:12.5px;color:var(--ink-dim);">ReLU(x·W₁+b₁)·W₂+b₂ with small fixed illustrative weights (not trained) — a real matrix multiply, just not a learned one.</p>${vecRow('FFN out',c.ffnOut,words)}<p style="margin-top:12px;font-size:12.5px;color:var(--ink-dim);">These are the final contextual output vectors for each word after one encoder block.</p>`;
+  }
+  panel.innerHTML = body;
+}
+
+/* ================= TOPIC 6: full encoder→decoder trace (single sentence) ================= */
+function causalSelfAttention(vecs){
+  const d = vecs[0].length;
+  const scaled = vecs.map((qi,i) => vecs.map((kj,j) => j>i ? -Infinity : dot(qi,kj)/Math.sqrt(d)));
+  const weights = scaled.map(row => softmax(row));
+  const outputs = weights.map(w => {
+    const out = new Array(d).fill(0);
+    w.forEach((wi,i)=>{ vecs[i].forEach((v,dim)=>{ out[dim]+=wi*v; }); });
+    return out;
+  });
+  return {weights, outputs};
+}
+function crossAttention(decVecs, encVecs){
+  const d = decVecs[0].length;
+  const scaled = decVecs.map(qi => encVecs.map(kj => dot(qi,kj)/Math.sqrt(d)));
+  const weights = scaled.map(row => softmax(row));
+  const outputs = weights.map(w => {
+    const out = new Array(d).fill(0);
+    w.forEach((wi,i)=>{ encVecs[i].forEach((v,dim)=>{ out[dim]+=wi*v; }); });
+    return out;
+  });
+  return {weights, outputs};
+}
+function t6FullEncoderTrace(words){
+  const dim = T6_DIM;
+  const embeds = words.map(w => hashEmbed(w, dim));
+  const pes = words.map((w,i) => computePE(i, dim));
+  const withPE = embeds.map((e,i) => e.map((v,d)=>+(v+pes[i][d]).toFixed(3)));
+  const attn = selfAttention(withPE);
+  const added = attn.outputs.map((z,i) => z.map((v,d)=>+(v+withPE[i][d]).toFixed(3)));
+  const normed = added.map(v => layerNorm(v).out.map(x=>+x.toFixed(3)));
+  const ffn = normed.map(v => feedForward(v).map(x=>+x.toFixed(3)));
+  const added2 = ffn.map((f,i) => f.map((v,d)=>+(v+normed[i][d]).toFixed(3)));
+  const normed2 = added2.map(v => layerNorm(v).out.map(x=>+x.toFixed(3)));
+  return {embeds, pes, withPE, attn, added, normed, ffn, added2, encOut: normed2};
+}
+function t6FullDecodeUpTo(t, sourceWords, encOut){
+  const dim = T6_DIM;
+  let tokens = ['<SOS>'];
+  let result = null;
+  for(let step=1; step<=t; step++){
+    const decEmbeds = tokens.map(w => hashEmbed(w, dim));
+    const pes = tokens.map((w,i) => computePE(i, dim));
+    const withPE = decEmbeds.map((e,i) => e.map((v,d)=>+(v+pes[i][d]).toFixed(3)));
+    const masked = causalSelfAttention(withPE);
+    const added1 = masked.outputs.map((z,i) => z.map((v,d)=>+(v+withPE[i][d]).toFixed(3)));
+    const normed1 = added1.map(v => layerNorm(v).out.map(x=>+x.toFixed(3)));
+    const cross = crossAttention(normed1, encOut);
+    const added2 = cross.outputs.map((z,i) => z.map((v,d)=>+(v+normed1[i][d]).toFixed(3)));
+    const normed2 = added2.map(v => layerNorm(v).out.map(x=>+x.toFixed(3)));
+    const ffn = normed2.map(v => feedForward(v).map(x=>+x.toFixed(3)));
+    const added3 = ffn.map((f,i) => f.map((v,d)=>+(v+normed2[i][d]).toFixed(3)));
+    const normed3 = added3.map(v => layerNorm(v).out.map(x=>+x.toFixed(3)));
+    const crossWeights = cross.weights[cross.weights.length-1];
+    let bestIdx = 0;
+    for(let k=1;k<crossWeights.length;k++){ if(crossWeights[k] > crossWeights[bestIdx]) bestIdx = k; }
+    const predictedWord = sourceWords[bestIdx];
+    result = {tokens: tokens.slice(), decEmbeds, withPE, masked, normed1, cross, normed2, ffn, normed3, crossWeights, predictedWord, predictedIdx: bestIdx};
+    if(step < t) tokens.push(predictedWord);
+  }
+  return result;
+}
+let t6Full = {words:[], stage:0, maxStage:0, encTrace:null};
+function t6FullSetup(){
+  const raw = document.getElementById('t5-full-sentence').value.trim();
+  t6Full.words = (raw.length ? raw.split(/\s+/) : ['We','are','friend']).slice(0,8);
+  t6Full.encTrace = t6FullEncoderTrace(t6Full.words);
+  t6Full.stage = 0;
+  t6Full.maxStage = t6Full.words.length;
+  renderT6Full();
+}
+function t6FullStep(delta){
+  t6Full.stage = Math.max(0, Math.min(t6Full.maxStage, t6Full.stage+delta));
+  renderT6Full();
+}
+function renderT6Full(){
+  const words = t6Full.words;
+  const total = t6Full.maxStage+1;
+  document.getElementById('t5-full-dots').innerHTML = Array.from({length: total}).map((_,i)=>`<div class="step-dot ${i<t6Full.stage?'done':''} ${i===t6Full.stage?'current':''}"></div>`).join('');
+  document.getElementById('t5-full-label').textContent = t6Full.stage===0
+    ? `Stage 1/${total}: Encoder`
+    : `Stage ${t6Full.stage+1}/${total}: Decoder step T=${t6Full.stage}`;
+  const panel = document.getElementById('t5-full-panel');
+  if(t6Full.stage===0){
+    const c = t6Full.encTrace;
+    panel.innerHTML = `<h4>Encoder — full block on "${words.join(' ')}"</h4>
+      <p style="font-size:12.5px;color:var(--ink-dim);">Embed → + positional encoding → self-attention → add &amp; norm → feed-forward → add &amp; norm. (See "Trace YOUR sentence" above for this broken into individual steps.)</p>
+      <p style="margin:10px 0 4px;">Final encoder output (this becomes the Key/Value source for every decoder step):</p>
+      ${vecRow('enc', c.encOut, words)}
+      <p style="margin-top:12px;font-size:12.5px;color:var(--ink-dim);">Click "Next" to start decoding, one token at a time.</p>`;
+  } else {
+    const t = t6Full.stage;
+    const d = t6FullDecodeUpTo(t, words, t6Full.encTrace.encOut);
+    const barsHtml = words.map((w,i)=>`
+      <div class="bar-row">
+        <div class="bar-label">${w}</div>
+        <div class="bar-track"><div class="bar-fill" style="width:${(d.crossWeights[i]*100).toFixed(1)}%"></div></div>
+        <div class="bar-val">${(d.crossWeights[i]*100).toFixed(1)}%</div>
+      </div>`).join('');
+    panel.innerHTML = `<h4>Decoder step T=${t}</h4>
+      <p style="margin:0 0 8px;">Decoder input so far: <span class="mono">${d.tokens.join(', ')}</span></p>
+      <p style="font-size:12.5px;color:var(--ink-dim);margin:0 0 10px;">Masked self-attention over these tokens → add &amp; norm → <strong>cross-attention against the encoder output</strong> → add &amp; norm → feed-forward → add &amp; norm.</p>
+      <p style="margin:10px 0 4px;">Cross-attention weights from the newest decoder position onto each source word (this doubles as our toy "vocabulary" — a real model projects to a full trained vocabulary instead):</p>
+      ${barsHtml}
+      <p style="margin-top:12px;">→ Toy copied token: <strong>${d.predictedWord}</strong>${t<t6Full.maxStage ? ' — fed back in as input for the next step.' : ' — final step (decoding stops here, matched to the source length).'}</p>`;
+  }
+}
+
+/* ================= QUIZZES ================= */
+const QUIZZES = {
+  t1: [
+    {q:'What is the main limitation of RNNs/LSTMs that Transformers address?', opts:[
+      'They cannot be trained at all',
+      'They process tokens sequentially, making them slow and prone to losing long-range context',
+      'They require more parameters than Transformers',
+      'They cannot be used for text'],correct:1,
+      exp:'RNNs read one token at a time and carry a hidden state forward — that\'s both slow and a bottleneck for long-range context (vanishing gradients).'},
+    {q:'Which paper introduced the Transformer architecture?', opts:[
+      '"Attention Is All You Need" (2017)','"ImageNet Classification" (2012)','"BERT: Pre-training of Deep Bidirectional Transformers" (2018)','"Word2Vec" (2013)'],correct:0,
+      exp:'"Attention Is All You Need" (2017) removed recurrence and introduced the self-attention-only Transformer.'},
+    {q:'What does ULMFiT contribute that became central to modern LLMs?', opts:[
+      'Convolutional layers','The pretrain-then-fine-tune paradigm','Self-attention','Byte-pair encoding'],correct:1,
+      exp:'ULMFiT popularized pretraining a language model, then fine-tuning it for a specific task — the recipe modern LLMs still follow.'},
+    {q:'Why is a Word2Vec embedding called "static"?', opts:[
+      'It only works for English','It gives the same vector for a word regardless of context','It is slower to compute','It does not use neural networks'],correct:1,
+      exp:'Word2Vec assigns one fixed vector per word no matter what sentence it appears in — unlike Transformer embeddings, which are context-dependent.'},
+  ],
+  t2: [
+    {q:'Why does "bank" get a different vector in "river bank" vs. "money bank"?', opts:[
+      'The word is spelled differently','A different neural network is used each time','Its output is a weighted blend of the OTHER words in its sentence, and those neighbors differ','Random noise is added each time'],correct:2,
+      exp:'Self-attention recomputes each word\'s representation as a weighted sum over every word in the same sentence — different neighbors, different blend.'},
+    {q:'What do Q, K, and V stand for in self-attention?', opts:[
+      'Quantity, Key, Volume','Query, Key, Value','Quick, Kernel, Vector','Query, Kernel, Variance'],correct:1,
+      exp:'Query, Key, and Value — the three projections used to compute attention weights and combine information.'},
+    {q:'Which function turns raw attention scores into weights that sum to 1?', opts:[
+      'ReLU','Softmax','Sigmoid','Tanh'],correct:1,
+      exp:'Softmax normalizes a set of scores into a probability-like distribution that sums to 1.'},
+    {q:'Which best describes a self-attention output vector for a given word?', opts:[
+      'Static — identical in every sentence','Dynamic — changes with the surrounding context','Random on every run','Independent of the other words in the sentence'],correct:1,
+      exp:'That\'s the whole point of self-attention: the same word can land at different points in vector space depending on context.'},
+    {q:'In Attention(Q,K,V) = softmax(QKᵀ/√d_k)·V, what is √d_k for?', opts:[
+      'It picks which word to mask','It scales the raw scores down so they don\'t grow too large before softmax','It converts vectors into words','It counts the number of attention heads'],correct:1,
+      exp:'Dividing by √d_k (a scaling factor based on the key dimension) keeps dot-product scores in a stable range before softmax.'},
+    {q:'In the dictionary analogy for Q/K/V, what does the Value correspond to?', opts:[
+      'The thing you search with','What gets returned once a Key matches','A random vector added for noise','The position of the word'],correct:1,
+      exp:'Query is what you look up with, Key is what it\'s compared against, and Value is what actually gets returned (and blended) once weights are computed.'},
+    {q:'What distinguishes cross-attention from plain self-attention?', opts:[
+      'Cross-attention has no softmax step','Cross-attention\'s Query comes from the decoder while its Key/Value come from the encoder','Cross-attention only works on images','Cross-attention doesn\'t use dot products'],correct:1,
+      exp:'In cross-attention, the decoder\'s Query attends to Keys and Values produced by the encoder — that\'s how the source sentence informs generation.'},
+  ],
+  t3: [
+    {q:'What is the purpose of "masked" multi-head attention in the decoder?', opts:[
+      'To hide future tokens so the model can\'t cheat by seeing what comes next','To remove padding tokens','To speed up training','To encode positional information'],correct:0,
+      exp:'Masking blocks each position from attending to tokens that come after it, preserving the left-to-right generation order.'},
+    {q:'What does cross-attention connect?', opts:[
+      'Two encoder layers','The decoder to the encoder\'s output','Two decoder layers','Input embeddings to positional encodings'],correct:1,
+      exp:'Cross-attention lets the decoder\'s queries attend to the encoder\'s output — this is how the source sentence informs generation.'},
+    {q:'Why does the Transformer need explicit positional encoding?', opts:[
+      'Because it processes all tokens in parallel and has no built-in sense of order','Because attention is too slow otherwise','Because embeddings are too large','Because it only has one layer'],correct:0,
+      exp:'Since self-attention looks at all tokens at once (no recurrence), order has to be injected separately via positional encoding.'},
+    {q:'Which parts of the Transformer do BERT and GPT each keep?', opts:[
+      'BERT = decoder, GPT = encoder','BERT = encoder, GPT = decoder','Both use only the encoder','Both use only the decoder'],correct:1,
+      exp:'BERT keeps only the encoder (bidirectional understanding); GPT keeps only the decoder (autoregressive generation).'},
+    {q:'Why does a Transformer block add the residual (x + z) instead of concatenating x and z?', opts:[
+      'Concatenation is illegal in neural networks','Addition keeps the vector\'s dimension unchanged, so identical blocks can be stacked N times','Addition is faster to type','Concatenation would delete information'],correct:1,
+      exp:'Element-wise addition preserves the input/output shape, which is exactly what lets the same block design repeat N times; concatenation would grow the dimension at every layer.'},
+    {q:'What does the feed-forward network (FFN) add that self-attention alone doesn\'t provide?', opts:[
+      'A way to mask future tokens','Per-token, non-linear processing of the attended representation','The positional encoding','Cross-attention to the encoder'],correct:1,
+      exp:'Self-attention mixes information across tokens; the FFN then processes each token\'s vector independently and adds non-linearity so the model can learn complex patterns.'},
+    {q:'Why not just number tokens 1, 2, 3, … as their positional encoding?', opts:[
+      'It would be too easy for the model','Raw integers are unbounded and discrete, which makes training unstable — sine/cosine give smooth, bounded values instead','Integers can\'t be added to embeddings at all','It was tried and worked perfectly'],correct:1,
+      exp:'The notes flag two problems with raw integer positions: no fixed upper limit, and discrete unbounded values that destabilize training — sinusoidal encoding fixes both by staying continuous and bounded in [-1, 1].'},
+  ],
+  t6: [
+    {q:'What pretraining objective does BERT use?', opts:[
+      'Next-token prediction','Masked Language Modeling (MLM)','Image classification','Reinforcement learning'],correct:1,
+      exp:'BERT hides random tokens and learns to predict them from both left and right context.'},
+    {q:'What pretraining objective does GPT use?', opts:[
+      'Masked Language Modeling','Autoregressive next-token prediction','Contrastive learning','Clustering'],correct:1,
+      exp:'GPT predicts the next token given everything before it — the same mechanism used to generate text at inference time.'},
+    {q:'Which company built BERT, and which built GPT?', opts:[
+      'BERT = Google, GPT = OpenAI','BERT = OpenAI, GPT = Google','Both by Meta','Both by OpenAI'],correct:0,
+      exp:'BERT was released by Google in 2018; GPT is OpenAI\'s decoder-only line of models.'},
+    {q:'Which of these is NOT one of the four core NLP tasks the notes list for this model family?', opts:[
+      'Text classification','Summarization','Translation','Image generation'],correct:3,
+      exp:'The notes list text classification, summarization, translation, and text generation — image generation isn\'t part of that list.'},
+  ],
+  t4: [
+    {q:'What defines a single attention "head"?', opts:[
+      'The number of tokens in the sentence','Its own set of W_Q, W_K, W_V projection matrices','The choice of activation function','The vocabulary size'],correct:1,
+      exp:'A head is a self-attention mechanism defined by its own Query/Key/Value projection matrices — one head, one set of those three matrices.'},
+    {q:'How many heads did the original "Attention Is All You Need" paper use, and is that number fixed?', opts:[
+      '8, and it\'s fixed forever','8, but it\'s a tunable hyperparameter','1, always','It varies by sentence length'],correct:1,
+      exp:'The paper used 8 heads, but the number of heads is a hyperparameter you can choose differently.'},
+    {q:'How are multiple heads\' outputs combined before the next layer?', opts:[
+      'Averaged, then discarded','Concatenated, then passed through a learned output projection W_O','Only the best head is kept','Multiplied element-wise'],correct:1,
+      exp:'MultiHead(Q,K,V) = Concat(head₁,...,head_N)·W_O — concatenate every head\'s output, then project back down with a learned W_O.'},
+    {q:'In cross-attention, where do the Query, Key, and Value come from?', opts:[
+      'All three come from the encoder','Query from the decoder; Key and Value from the encoder','Query from the encoder; Key and Value from the decoder','All three come from the decoder'],correct:1,
+      exp:'Cross-attention: Query comes from the decoder (the output sequence being generated); Key and Value come from the encoder\'s output (the source sequence).'},
+    {q:'Why does masked self-attention add −∞ to future positions before softmax, instead of, say, zeroing the score directly?', opts:[
+      'Because −∞ trains faster','Because softmax(−∞) = 0, so those positions naturally get zero weight without changing the softmax math for the rest of the row','Because negative infinity is required by GPU hardware','It doesn\'t — the notes use 0, not −∞'],correct:1,
+      exp:'Softmax of −∞ evaluates to 0, so adding a −∞ mask before softmax cleanly zeroes out future positions while leaving the softmax formula itself unchanged.'},
+  ],
+  t5: [
+    {q:'In the full pipeline, what feeds Key and Value into the decoder\'s cross-attention layer?', opts:[
+      'The decoder\'s own masked self-attention output only','The encoder\'s output (computed once, reused at every decoder step)','A fresh random vector at each step','The final softmax probabilities'],correct:1,
+      exp:'The encoder runs once on the source sentence; its output supplies Key and Value to every decoder step\'s cross-attention layer.'},
+    {q:'What is the feed-forward network\'s hidden dimension in the original paper (with d_model=512)?', opts:[
+      '512','64','2048','8'],correct:2,
+      exp:'The FFN expands 512 → 2048 → 512; 2048 is the hidden layer width (d_ff) in "Attention Is All You Need."'},
+    {q:'Why is training described as "parallel" but inference as "sequential" for the decoder?', opts:[
+      'Training uses a GPU and inference doesn\'t','During training the full target sequence is already known and masked all at once; during inference each token must be generated before the next one can be predicted','Inference is parallel and training is sequential','There is no difference between them'],correct:1,
+      exp:'Training has the complete target sentence available, so masked self-attention computes every position in one parallel pass. Inference has no target yet, so each token must be generated, fed back in, and used to predict the next one — one step at a time.'},
+    {q:'In the autoregressive inference example, what is the decoder\'s input at T=2 (translating "We are friend" → "हम दोस्त हैं")?', opts:[
+      'Just <SOS>','<SOS>, हम','<SOS>, हम, दोस्त','The full target sentence'],correct:1,
+      exp:'At T=1 the decoder sees only <SOS> and predicts हम. At T=2 it feeds <SOS>, हम back in to predict दोस्त.'},
+    {q:'What projects the decoder\'s final 512-dim output into a probability distribution over the whole vocabulary?', opts:[
+      'A residual connection','LayerNorm alone','A linear layer, followed by softmax','Positional encoding'],correct:2,
+      exp:'A linear layer projects to vocabulary-size scores; softmax then turns those scores into a probability distribution that sums to 1.'},
+  ],
+};
+
+let quizProgress = {};
+function renderQuiz(topicKey){
+  const container = document.getElementById(topicKey+'-quiz-body');
+  const qs = QUIZZES[topicKey];
+  quizProgress[topicKey] = {answered:0, correct:0, total:qs.length};
+  container.innerHTML = qs.map((item,qi)=>`
+    <div class="quiz-q">
+      <p class="qtext">${qi+1}. ${item.q}</p>
+      ${item.opts.map((opt,oi)=>`<button class="quiz-opt" onclick="answerQuiz('${topicKey}',${qi},${oi})" id="${topicKey}-q${qi}-o${oi}">${opt}</button>`).join('')}
+      <div class="quiz-exp" id="${topicKey}-q${qi}-exp">${item.exp}</div>
+    </div>`).join('');
+  renderMastery(topicKey);
+}
+function answerQuiz(topicKey, qi, oi){
+  const item = QUIZZES[topicKey][qi];
+  for(let i=0;i<item.opts.length;i++){
+    const btn = document.getElementById(`${topicKey}-q${qi}-o${i}`);
+    btn.classList.remove('correct','wrong');
+    btn.disabled = true;
+  }
+  document.getElementById(`${topicKey}-q${qi}-o${item.correct}`).classList.add('correct');
+  if(oi !== item.correct) document.getElementById(`${topicKey}-q${qi}-o${oi}`).classList.add('wrong');
+  document.getElementById(`${topicKey}-q${qi}-exp`).classList.add('show');
+
+  const prog = quizProgress[topicKey] || (quizProgress[topicKey] = {answered:0, correct:0, total:QUIZZES[topicKey].length});
+  prog.answered++;
+  if(oi === item.correct) prog.correct++;
+  if(prog.answered === prog.total){
+    const pct = prog.correct / prog.total;
+    if(pct >= 0.8){
+      const t = TOPICS.find(x => ('t'+x.num) === topicKey);
+      if(t) markMastered(t.id);
+    }
+  }
+  renderMastery(topicKey);
+}
+
+/* ================= MASTERY CHECKPOINT ================= */
+function renderMastery(topicKey){
+  const el = document.getElementById('mastery-'+topicKey);
+  if(!el) return;
+  const t = TOPICS.find(x => ('t'+x.num) === topicKey);
+  const topicId = t ? t.id : topicKey;
+  const earned = progressData.mastered.includes(topicId);
+  const prog = quizProgress[topicKey];
+  const scoreText = (prog && prog.answered) ? ` (current session score: ${prog.correct}/${prog.answered} answered)` : '';
+  el.innerHTML = `<p style="margin-bottom:10px;font-size:13.5px;color:var(--ink-dim);">Score 80% or higher on the quiz above to mark this topic mastered.${scoreText}</p><span class="mastery-badge ${earned?'earned':''}">${earned ? '✅ Mastered' : '⭘ Not yet mastered'}</span>`;
+}
+
+/* ================= INIT ================= */
+computeReadingTimes();
+buildLanding();
+renderFooter('footer-landing');
+buildTopicChrome();
+buildTimeline();
+setAttnSentence('A');
+resetOrderDemo();
+renderPE();
+buildArchDiagram('t1-diagram','t1-svg','arrow-t1');
+buildArchDiagram();
+buildArchSteps('t3-encoder-steps','t3-encoder-detail', ENCODER_STEPS);
+buildArchSteps('t3-decoder-steps','t3-decoder-detail', DECODER_STEPS);
+buildMlmChips();
+resetGPT();
+renderLN();
+setT5Sentence('A');
+setMaskMode(true);
+buildT6Flow();
+showT6Flow(0);
+t6InferIdx = 0;
+renderInferStep();
+t6SetupSim();
+t6FullSetup();
+['t1','t2','t3','t6','t4','t5'].forEach(renderQuiz);
+</script>
+</body></html>
